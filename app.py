@@ -64,9 +64,9 @@ except:
 st.sidebar.success("✅ Available for Opportunities")
 
 # VISITOR COUNTER BADGE
-# This automatically increments every time a new person loads your URL
+# This version uses a simpler link to avoid "broken image" errors
 st.sidebar.markdown(
-    "![Visitors](https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fsaviour-amegayie-portfolio.streamlit.app&count_bg=%2300CC96&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=Portfolio+Views&edge_flat=false)"
+    "![Visitors](https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https://saviour-amegayie-portfolio.streamlit.app&count_bg=%2300CC96&title_bg=%23555555&title=Views&edge_flat=false)"
 )
 
 # --- SOCIAL ICONS SECTION ---
