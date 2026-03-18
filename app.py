@@ -63,12 +63,6 @@ except:
 # --- SIDEBAR STATUS & VISITOR COUNTER ---
 st.sidebar.success("✅ Available for Opportunities")
 
-# VISITOR COUNTER BADGE
-# Using a 'safe' encoded URL to prevent broken image errors
-st.sidebar.markdown(
-    "![Visitors](https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fsaviour-amegayie-portfolio.streamlit.app&count_bg=%2300CC96&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=Views&edge_flat=false)"
-)
-
 # --- SOCIAL ICONS SECTION ---
 st.sidebar.write("---")
 st.sidebar.subheader("Connect with Me")
@@ -281,7 +275,7 @@ elif page == "Projects":
             file_name=f"Staffing_Report_{level}.txt",
             mime="text/plain"
         )
-        
+
     st.write("---")
     st.write("### Regional Enrollment Distribution (Live Preview)")
     # Using your existing mock data for the chart
@@ -299,9 +293,11 @@ elif page == "About Me":
     
     st.markdown("""
     ### From Classroom Leadership to Data-Driven Solutions ☁️
-    For the past **6 years**, I have served as an Educator within the **Ghana Education Service (GES)**. My background in Information Technology from the **University of Cape Coast (UCC)** provided the foundation, but my passion for solving systemic problems led me into the world of **Data Science**.
+    For the past **6 years**, I have served as an Educator and Leader within the **Ghana Education Service (GES)**. My background in Information Technology from the **University of Cape Coast (UCC)** provided the foundation for my transition into **Data Science**.
     
-    I believe that data is the most powerful tool for growth in Africa—whether it's helping a farmer in the Volta Region predict their yield or helping a school principal track student progress.
+    I don't just build models; I solve systemic problems. Whether it's optimizing crop yields for food security or calculating teacher-student ratios for better educational outcomes, my goal is to turn raw numbers into **human impact**.
+    
+    I thrive at the intersection of **Technology, Education, and Strategy**.
     """)
 
     col_edu, col_stack = st.columns(2)
