@@ -216,34 +216,61 @@ elif page == "Projects":
     st.write("---")
 
     # PROJECT 2: EDUCATION DASHBOARD
-    st.header("2. Ghana Education Data Dashboard (GES) 🇬🇭")
+    st.header("2. Ghana Education Analytics & Resource Predictor 🇬🇭")
     
     col_a, col_b = st.columns([1, 2])
     with col_a:
         st.image("https://cdn-icons-png.flaticon.com/512/2103/2103633.png")
-        st.write("**Status:** In Development")
-        st.write("**Focus:** Data Visualization & Policy Analysis")
+        st.write("**Role:** Lead Analyst")
+        st.write("**Tech:** Python, Pandas, Predictive Logic")
 
     with col_b:
         st.markdown("""
-        **Project Overview:** Leveraging 6 years of experience in the Ghana Education Service, I am building a comprehensive analytics platform to visualize regional educational trends.
+        **Project Overview:** As an educator with 6 years in the **Ghana Education Service**, I developed this tool to assist school heads in resource planning.
         
-        **Key Goals:**
-        * **Regional Performance Tracking:** Visualizing BECE/WASSCE trends across different districts.
-        * **Resource Allocation:** Identifying gaps in teacher-to-student ratios.
-        * **Data Driven Policy:** Transforming raw school census data into actionable insights for stakeholders.
+        **Key Features:**
+        * **Resource Optimization:** Automated calculation of teacher requirements.
+        * **Staffing Gap Analysis:** Identifying schools that fall below GES standards.
+        * **Data Driven Policy:** Moving from manual census to digital insights.
         """)
     
-    st.info("🚧 **Current Phase:** Data cleaning and standardization of regional school reports.")
-    
-    st.write("### Preview: Regional Enrollment Distribution (Sample Data)")
+    st.write("---")
+    st.subheader("🛠️ Interactive Resource Predictor")
+    st.info("Input school data below to calculate required staffing based on GES 1:35 (Primary) and 1:25 (JHS) standards.")
+
+    with st.container(border=True):
+        c1, c2 = st.columns(2)
+        with c1:
+            level = st.selectbox("School Level", ["Primary School", "Junior High (JHS)"])
+            total_students = st.number_input("Current Student Enrollment", min_value=1, value=350)
+        with c2:
+            current_teachers = st.number_input("Current Number of Teachers", min_value=1, value=8)
+            target_ratio = 35 if level == "Primary School" else 25
+
+        # Logic for Prediction
+        required_teachers = int(np.ceil(total_students / target_ratio))
+        gap = required_teachers - current_teachers
+
+        st.write("---")
+        res_col1, res_col2 = st.columns(2)
+        res_col1.metric("Required Staff", f"{required_teachers} Teachers")
+        
+        if gap > 0:
+            res_col2.metric("Staffing Gap", f"-{gap}", delta_color="inverse", help="Number of additional teachers needed.")
+            st.error(f"⚠️ **Urgent:** This school requires {gap} more teachers to meet the {level} standard of 1:{target_ratio}.")
+        else:
+            res_col2.metric("Staffing Gap", "Optimal", delta_color="normal")
+            st.success(f"✅ **Compliant:** This school meets the GES staffing standards.")
+
+    st.write("---")
+    st.write("### Regional Enrollment Distribution (Live Preview)")
+    # Using your existing mock data for the chart
     mock_data = pd.DataFrame({
         'Region': ['Greater Accra', 'Ashanti', 'Volta', 'Western', 'Northern'],
         'Enrollment': [45000, 52000, 31000, 28000, 39000]
     }).sort_values('Enrollment', ascending=False)
     
     st.bar_chart(data=mock_data, x='Region', y='Enrollment', color='#00CC96')
-    st.write("---")
 
 # 5. About Me Page
 elif page == "About Me":
