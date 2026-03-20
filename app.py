@@ -12,7 +12,8 @@ st.set_page_config(page_title="Saviour Amegayie | Data Portfolio", page_icon="�
 @st.cache_resource
 def load_assets():
     model_path = 'random_forest_model.pkl'
-    preprocessor_path = 'preprocessor.pkl'
+    # RENAMED to avoid conflict with GRIP
+    preprocessor_path = 'harvest_preprocessor.pkl' 
     
     # Google Drive ID for your 190MB model
     file_id = '15wXBt7Qn_fX_7qkpV-2U7uEBoQagNpb5'
@@ -141,7 +142,7 @@ elif page == "Projects":
 
     try:
         # This triggers the gdown download if the file is missing!
-        model, preprocessor = load_assets() 
+        model, harvest_preprocessor = load_assets() 
         model_loaded = True
     except Exception as e:
         st.error(f"Asset Loading Error: {e}")
@@ -151,8 +152,8 @@ elif page == "Projects":
     
     if model_loaded:
         with st.container(border=True):
-            available_countries = sorted(preprocessor.categories_[0].tolist())
-            available_crops = sorted(preprocessor.categories_[1].tolist())
+            available_countries = sorted(harvest_preprocessor.categories_[0].tolist())
+            available_crops = sorted(harvest_preprocessor.categories_[1].tolist())
 
             sim_col1, sim_col2 = st.columns(2)
             with sim_col1:
@@ -172,7 +173,7 @@ elif page == "Projects":
 
             try:
                 categorical_data = input_data[['area', 'item']]
-                encoded_data = preprocessor.transform(categorical_data)
+                encoded_data = harvest_preprocessor.transform(categorical_data)
                 if hasattr(encoded_data, "toarray"):
                     encoded_data = encoded_data.toarray()
                 
@@ -209,82 +210,105 @@ elif page == "Projects":
 
     st.write("---")
 
-    # PROJECT 2: EDUCATION DASHBOARD
-    st.header("2. Ghana Education Analytics & Resource Predictor 🇬🇭")
+    # --- PROJECT 2: PROJECT GRIP (Ministerial Resource Predictor) ---
+    st.header("2. Project GRIP: Ministerial Resource Predictor 🇬🇭")
     
     col_a, col_b = st.columns([1, 2])
     with col_a:
-        st.image("https://cdn-icons-png.flaticon.com/512/2103/2103633.png")
-        st.write("**Role:** Lead Analyst")
-        st.write("**Tech:** Python, Pandas, Predictive Logic")
+        st.image("https://cdn-icons-png.flaticon.com/512/1532/1532556.png") 
+        st.write("**Role:** Lead Data Architect")
+        st.write("**Engine:** Hybrid Intelligence (ML + Policy Logic)")
 
     with col_b:
         st.markdown("""
-        **Project Overview:** As an educator with 6 years in the **Ghana Education Service**, I developed this tool to assist school heads in resource planning.
+        **Project Overview:** Developed to solve regional resource disparities. GRIP fuses MoE targets, GSS Census data, and UNICEF regional contexts.
         
-        **Key Features:**
-        * **Resource Optimization:** Automated calculation of teacher requirements.
-        * **Staffing Gap Analysis:** Identifying schools that fall below GES standards.
-        * **Data Driven Policy:** Moving from manual census to digital insights.
+        **Key Breakthroughs:**
+        * **Hybrid Intelligence:** Gaussian Naive Bayes + Structural Policy Guardrails.
+        * **100% Precision:** Zero false alarms for budget reallocation.
+        * **Impact:** Identified 100% of high-risk ministerial targets in validation.
         """)
     
     st.write("---")
-    st.subheader("🛠️ Interactive Resource Predictor")
-    st.info("Input school data below to calculate required staffing based on GES 1:35 (Primary) and 1:25 (JHS) standards.")
+    st.subheader("🛠️ GRIP: Interactive Risk Simulator")
+    st.info("Simulate Ministerial targets to identify 'Red Zones' before the 2026 deadline.")
 
-    with st.container(border=True):
-        c1, c2 = st.columns(2)
-        with c1:
-            level = st.selectbox("School Level", ["Primary School", "Junior High (JHS)"])
-            total_students = st.number_input("Current Student Enrollment", min_value=1, value=350)
-        with c2:
-            current_teachers = st.number_input("Current Number of Teachers", min_value=1, value=8)
-            target_ratio = 35 if level == "Primary School" else 25
+    # LOAD GRIP ASSETS - Using unique filenames
+    try:
+        grip_prep = joblib.load('grip_preprocessor.pkl')
+        grip_model = joblib.load('model_engine.pkl')
+        grip_assets_loaded = True
+    except:
+        st.warning("Project GRIP assets (grip_preprocessor.pkl / model_engine.pkl) not found.")
+        grip_assets_loaded = False
 
-        # Logic for Prediction
-        required_teachers = int(np.ceil(total_students / target_ratio))
-        gap = required_teachers - current_teachers
+    if grip_assets_loaded:
+        with st.container(border=True):
+            c1, c2 = st.columns(2)
+            with c1:
+                edu_level = st.selectbox("Sector / Education Level", ["Second Cycle (SHS)", "Second Cycle (TVET)", "Basic Education", "Inclusive and Special Education", "Management and Administration"])
+                context = st.selectbox("Regional Belt (UNICEF)", ["Northern Savannah", "Middle Belt", "Southern Belt"])
+                pop = st.number_input("Regional Population Aged 3+", min_value=100000, value=800000)
+            
+            with c2:
+                lit_rate = st.slider("Regional Literacy Rate (%)", 0.0, 100.0, 65.0)
+                imp_gap = st.number_input("Current Implementation Gap (Target - Latest)", value=15.0)
+                indicator_name = st.text_input("Indicator Name", value="Enrolment Rate")
 
-        st.write("---")
-        res_col1, res_col2 = st.columns(2)
-        res_col1.metric("Required Staff", f"{required_teachers} Teachers")
-        
-        if gap > 0:
-            res_col2.metric("Staffing Gap", f"-{gap}", delta_color="inverse", help="Number of additional teachers needed.")
-            st.error(f"⚠️ **Urgent:** This school requires {gap} more teachers to meet the {level} standard of 1:{target_ratio}.")
-        else:
-            res_col2.metric("Staffing Gap", "Optimal", delta_color="normal")
-            st.success(f"✅ **Compliant:** This school meets the GES staffing standards.")
-    # --- GENERATE REPORT FOR DOWNLOAD ---
-        report_text = f"""
-        GHANA EDUCATION SERVICE - STAFFING ANALYSIS REPORT
-        --------------------------------------------------
-        School Level: {level}
-        Total Enrollment: {total_students}
-        Current Teachers: {current_teachers}
-        Required Teachers (Standard 1:{target_ratio}): {required_teachers}
-        Staffing Gap: {gap}
-        
-        Status: {'⚠️ Understaffed' if gap > 0 else '✅ Compliant'}
-        Report Generated by: Saviour Amegayie Portfolio Engine
-        """
-        
-        st.download_button(
-            label="📄 Download Staffing Report",
-            data=report_text,
-            file_name=f"Staffing_Report_{level}.txt",
-            mime="text/plain"
-        )
+            if st.button("Analyze Risk Profile", type="primary"):
+                # Prediction Logic
+                input_df = pd.DataFrame({
+                    'Education_Level': [edu_level], 'Context_Name': [context],
+                    'Total_Pop': [pop], 'Literacy_Rate': [lit_rate]
+                })
+                
+                processed_input = grip_prep.transform(input_df)
+                # Prediction Logic for GRIP
+                prob_risk = grip_model.predict_proba(processed_input)[0][1]
 
-    st.write("---")
-    st.write("### Regional Enrollment Distribution (Live Preview)")
-    # Using your existing mock data for the chart
-    mock_data = pd.DataFrame({
-        'Region': ['Greater Accra', 'Ashanti', 'Volta', 'Western', 'Northern'],
-        'Enrollment': [45000, 52000, 31000, 28000, 39000]
-    }).sort_values('Enrollment', ascending=False)
-    
-    st.bar_chart(data=mock_data, x='Region', y='Enrollment', color='#00CC96')
+                # Hybrid Logic Layer
+                if imp_gap <= 0:
+                    final_status, risk_color = "LOW RISK: Target Met/Exceeded", "success"
+                elif "Science / Humanities Ratio" in indicator_name:
+                    final_status, risk_color = "HIGH RISK: Structural Anomaly", "error"
+                else:
+                    final_status = "HIGH RISK: Intervention Required" if prob_risk >= 0.98 else "LOW RISK: Stable Trend"
+                    risk_color = "error" if prob_risk >= 0.98 else "success"
+
+                st.write("---")
+                if risk_color == "success":
+                    st.success(f"### Result: {final_status}")
+                    st.balloons()
+                else:
+                    st.error(f"### Result: {final_status}")
+                
+                res_m1, res_m2 = st.columns(2)
+                res_m1.metric("Model Confidence", f"{prob_risk*100:.2f}%")
+                res_m2.metric("Projected Status", "Critical" if "HIGH" in final_status else "Healthy")
+
+                # --- GENERATE MINISTERIAL REPORT ---
+                report_content = f"""
+                GOVERNMENT OF GHANA - PROJECT GRIP RISK ANALYSIS
+                -----------------------------------------------
+                Indicator: {indicator_name}
+                Sector: {edu_level}
+                Region Context: {context}
+                Population Context: {pop:,}
+                Regional Literacy: {lit_rate}%
+                Current Implementation Gap: {imp_gap}
+                
+                ANALYSIS RESULT: {final_status}
+                AI CONFIDENCE SCORE: {prob_risk*100:.2f}%
+                -----------------------------------------------
+                Generated by: Saviour Amegayie Portfolio Engine
+                """
+                
+                st.download_button(
+                    label="📄 Download Ministerial Risk Report",
+                    data=report_content,
+                    file_name=f"GRIP_Report_{indicator_name}.txt",
+                    mime="text/plain"
+                )
 
 # 5. About Me Page
 elif page == "About Me":
