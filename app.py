@@ -392,35 +392,74 @@ elif page == "Projects":
                         pdf = FPDF()
                         pdf.add_page()
     
-                        # Header
+                        # --- Header ---
                         pdf.set_font("Arial", "B", 16)
                         pdf.cell(190, 10, "PROJECT GRIP: REGIONAL ASSESSMENT", ln=True, align="C")
                         pdf.set_font("Arial", "", 10)
-                        pdf.cell(190, 10, f"Generated for: Ghana Education Service (GES) | {pd.Timestamp.now().strftime('%Y-%m-%d')}", ln=True, align="C")
+                        pdf.cell(190, 10, f"Strategic Report | Generated: {pd.Timestamp.now().strftime('%Y-%m-%d')}", ln=True, align="C")
                         pdf.line(10, 30, 200, 30)
 
-                        # Core Data
-                        pdf.set_font("Arial", "B", 12)
+                        # --- Summary Data ---
                         pdf.ln(10)
-                        pdf.cell(100, 10, f"Region: {region}")
-                        pdf.cell(100, 10, f"Zone: {belt}", ln=True)
-                        pdf.cell(100, 10, f"Indicator: {indicator}", ln=True)
+                        pdf.set_font("Arial", "B", 12)
+                        pdf.cell(95, 10, f"Region: {region}")
+                        pdf.cell(95, 10, f"Zone: {belt}", ln=True)
+                        pdf.cell(190, 10, f"Indicator: {indicator}", ln=True)
     
-                        # Status Box (Highlighting the Risk)
-                        pdf.set_fill_color(239, 85, 59) if "CRITICAL" in status else pdf.set_fill_color(0, 204, 150)
+                        # --- Status Box ---
+                        # Red for Critical, Green for others
+                        if "CRITICAL" in status:
+                            pdf.set_fill_color(239, 85, 59) 
+                        else:
+                            pdf.set_fill_color(0, 204, 150)
+        
                         pdf.set_text_color(255, 255, 255)
                         pdf.cell(190, 12, f"STATUS: {status}", border=1, ln=True, align="C", fill=True)
     
-                        # Reset colors for the rest
+                        # --- Risk Analytics ---
                         pdf.set_text_color(0, 0, 0)
                         pdf.set_font("Arial", "", 11)
                         pdf.ln(5)
-                        pdf.multi_cell(0, 10, f"The AI analysis shows a {risk:.2f}% risk of missing the 2026 target. "
-                                          f"There is currently a {gap:.1f}% gap remaining in performance.")
-                        return bytes(pdf.output())
+                        pdf.multi_cell(0, 8, f"The Hybrid Intelligence engine indicates a {risk:.2f}% risk factor. "
+                                                f"The current implementation gap stands at {gap:.1f}%.")
+
+                        # --- NEW: STRATEGIC POLICY RECOMMENDATIONS ---
+                        pdf.ln(5)
+                        pdf.set_font("Arial", "B", 12)
+                        pdf.cell(190, 10, "Strategic Policy Recommendations:", ln=True)
+                        pdf.set_font("Arial", "", 11)
                     
-                    # --- In your Streamlit code ---
-                    pdf_data = create_pdf_report(selected_region, indicator_name, status_label, prob_risk*100, imp_gap, derived_belt)
+                        if "CRITICAL" in status:
+                            recommendations = [
+                                f"1. Immediate Resource Realignment: Reallocate educational hardware/personnel to {region}.",
+                                "2. Accelerated Monitoring: Increase supervision frequency by 50% for this indicator.",
+                                f"3. Belt-Level Intervention: Coordinate with {belt} directors for emergency funding.",
+                                "4. Risk Mitigation: Conduct a root-cause analysis on why the 2026 target is lagging."
+                            ]
+                        elif "STABLE" in status:
+                            recommendations = [
+                                "1. Efficiency Optimization: Identify local bottlenecks to move from Stable to Impressive.",
+                                "2. Peer-to-Peer Mentorship: Use this region's model to assist lower-performing areas.",
+                                "3. Sustainability Audit: Ensure that current resource levels are maintained through 2026.",
+                                "4. Data Validation: Conduct quarterly checks to ensure the implementation gap continues to shrink."
+                            ]
+                        else: # For IMPRESSIVE status
+                            recommendations = [
+                                "1. Best Practice Documentation: Document the success factors for national scaling.",
+                                "2. Resource Surplus Analysis: Evaluate if resources can be safely shared with Critical regions.",
+                                "3. Milestone Celebration: Acknowledge regional stakeholders for early target achievement."
+                            ]
+
+                        for rec in recommendations:
+                            pdf.multi_cell(0, 8, rec)
+
+                        # --- Footer ---
+                        pdf.ln(10)
+                        pdf.set_font("Arial", "I", 8)
+                        pdf.cell(0, 10, "Confidential | Saviour Amegayie Data Portfolio | BloomCore Tech", align="C")
+
+                        # Return as bytes for Streamlit
+                        return bytes(pdf.output())
 
                     st.download_button(
                         label="📥 Download Formal PDF Report",
