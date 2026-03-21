@@ -32,34 +32,44 @@ def load_assets():
 
 # --- LOAD PROJECT GRIP ASSETS ---
 # Loaded globally so they are available throughout the app
-try:
-    # Since we saved the 'engine' as a Pipeline, this loads EVERYTHING (prep + model)
-    grip_model = joblib.load('model_engine.pkl')
-    grip_prep = joblib.load('grip_preprocessor.pkl')
-    grip_assets_loaded = True
-except Exception as e:
-    grip_assets_loaded = False
+@st.cache_resource
+def load_grip_engine():
+    try:
+        engine = joblib.load('ges_hybrid_engine.pkl')
+        ref = joblib.load('median_gap_reference.pkl')
+        return engine, ref, True
+    except:
+        return None, None, False
+
+# Call the function globally
+grip_engine, median_ref, grip_assets_loaded = load_grip_engine()
+
+# Mapping Regions to Belts for Automation
+REGION_CONTEXT_MAP = {
+    'Ahafo': 'Middle Belt', 'Ashanti': 'Middle Belt', 'Bono': 'Middle Belt', 'Bono East': 'Middle Belt',
+    'Central': 'Southern Belt', 'Eastern': 'Southern Belt', 'Greater Accra': 'Southern Belt',
+    'North East': 'Northern Savannah', 'Northern': 'Northern Savannah', 'Oti': 'Middle Belt',
+    'Savannah': 'Northern Savannah', 'Upper East': 'Northern Savannah', 'Upper West': 'Northern Savannah',
+    'Volta': 'Southern Belt', 'Western': 'Southern Belt', 'Western North': 'Middle Belt'
+}
 
 # --- CUSTOM CSS ---
 st.markdown("""
     <style>
-    [data-testid="stMetricLabel"] {
-        font-size: 14px !important;
-        font-weight: bold;
-    }
-    [data-testid="stMetricValue"] {
-        font-size: 24px !important;
-    }
-    .social-icon {
-        display: flex;
-        justify-content: center;
-        margin-bottom: 10px;
-    }
-    /* Adds a subtle border to containers for a clean look */
+    [data-testid="stMetricLabel"] { font-size: 14px !important; font-weight: bold; }
+    [data-testid="stMetricValue"] { font-size: 24px !important; }
     div[data-testid="stVerticalBlock"] > div:has(div.stMetric) {
         background-color: #1e2130;
         padding: 15px;
         border-radius: 10px;
+    }
+    .status-card {
+        padding: 20px;
+        border-radius: 10px;
+        text-align: center;
+        margin-bottom: 20px;
+        font-weight: bold;
+        border: 1px solid #3d4156;
     }
     </style>
     """, unsafe_allow_html=True)
@@ -98,6 +108,16 @@ if page == "Home":
     st.markdown("### **Data Scientist leveraging AI for Food Security & Education 🌍**")
     st.subheader("Data Scientist | IT Educator | AI Enthusiast")
     st.write("---")
+
+    # --- UPDATED: Quick Impact Metrics ---
+    st.markdown("#### **Professional Snapshot**")
+    h1, h2, h3, h4 = st.columns(4)
+    h1.metric("Experience", "6 Years", help="Leadership in Ghana Education Service (GES)")
+    h2.metric("ML Accuracy", "99.1%", help="Achieved in Harvest Intelligence Engine")
+    h3.metric("Scope", "16 Regions", help="Regional analysis across all of Ghana")
+    h4.metric("Focus", "AI + Policy", help="Combining Data Science with strategic implementation")
+
+    st.write("---")
     
     col_intro, col_img = st.columns([2, 1])
     with col_intro:
@@ -110,9 +130,13 @@ if page == "Home":
         Currently focused on:
         * 🌾 **Agri-Tech:** Predictive modeling for global food security.
         * 📚 **Edu-Tech:** Leveraging analytics to improve learning outcomes.
-        * 📊 **Business Intelligence:** Streamlining retail and sports data.
         """)
-        st.info("💡 **Project Spotlight:** Successfully led 'The Outliers' to develop a Harvest Intelligence Engine with **99.1% R² Accuracy**!")
+
+        # --- UPDATED: Combined Project Spotlight ---
+        st.info("""
+        💡 **Flagship Project Highlights:** * **Agri-Tech:** Developed a Harvest Intelligence Engine with **99.1% R² Accuracy**.
+        * **Edu-Tech:** Built 'Project GRIP' to track **7 ministerial indicators** with 100% precision for budget reallocation.
+        """)
 
     st.write("---")
     st.subheader("Technical Toolbox")
@@ -123,7 +147,7 @@ if page == "Home":
         st.caption("Pandas, NumPy, Matplotlib, Seaborn")
     with sk2:
         st.write("🤖 **ML/AI**")
-        st.caption("Scikit-Learn, Random Forest, Regression")
+        st.caption("Scikit-Learn, Random Forest, Regression, Bayesian Modeling")
     with sk3:
         st.write("💻 **IT & Dev**")
         st.caption("Python, SQL, Streamlit, Git")
@@ -237,90 +261,152 @@ elif page == "Projects":
         
         **Key Breakthroughs:**
         * **Hybrid Intelligence:** Gaussian Naive Bayes + Structural Policy Guardrails.
-        * **100% Precision:** Zero false alarms for budget reallocation.
+        * **Granular Analysis:** Now tracking performance across all **16 regions**.
+        * **Visual Status Engine:** Automated classification of regional performance (Critical/Stable/Impressive)
         * **Impact:** Identified 100% of high-risk ministerial targets in validation.
         """)
     
     st.write("---")
     st.subheader("🛠️ GRIP: Interactive Risk Simulator")
-    st.info("Simulate Ministerial targets to identify 'Red Zones' before the 2026 deadline.")
+    st.info("Select a specific region to simulate 2026 target feasibility and identify resource gaps.")
 
-    # LOAD GRIP ASSETS - Using unique filenames
-    try:
-        grip_prep = joblib.load('grip_preprocessor.pkl')
-        grip_model = joblib.load('model_engine.pkl')
-        grip_assets_loaded = True
-    except:
-        st.warning("Project GRIP assets (grip_preprocessor.pkl / model_engine.pkl) not found.")
-        grip_assets_loaded = False
-
-    if grip_assets_loaded:
+    # --- SIMPLIFIED GRIP LOGIC ---
+    # We no longer try to load the files here, we just check if they loaded successfully at the top
+    
+    if not grip_assets_loaded:
+        st.warning("⚠️ Project GRIP assets not found. Ensure 'ges_hybrid_engine.pkl' and 'median_gap_reference.pkl' are in the folder.")
+    else:
         with st.container(border=True):
             c1, c2 = st.columns(2)
             with c1:
-                edu_level = st.selectbox("Sector / Education Level", ["Second Cycle (SHS)", "Second Cycle (TVET)", "Basic Education", "Inclusive and Special Education", "Management and Administration"])
-                context = st.selectbox("Regional Belt (UNICEF)", ["Northern Savannah", "Middle Belt", "Southern Belt"])
-                pop = st.number_input("Regional Population Aged 3+", min_value=100000, value=800000)
+                # This is now the ONLY instance of this selectbox
+                selected_region = st.selectbox("Select Target Region", list(REGION_CONTEXT_MAP.keys()))
+                derived_belt = REGION_CONTEXT_MAP[selected_region]
+                st.caption(f"📍 Automatically mapped to: **{derived_belt}**")
+                
+                edu_level = st.selectbox("Education Level", ["Basic Education", "Secondary Education", "Technical and Vocational", "Tertiary Education"])
+                pop = st.number_input("Regional Population Aged 3+", min_value=100000, value=850000)
             
             with c2:
-                lit_rate = st.slider("Regional Literacy Rate (%)", 0.0, 100.0, 65.0)
-                imp_gap = st.number_input("Current Implementation Gap (Target - Latest)", value=15.0)
-                indicator_name = st.text_input("Indicator Name", value="Enrolment Rate")
+                lit_rate = st.slider("Regional Literacy Rate (%)", 0.0, 100.0, 68.0)
+                indicator_name = st.selectbox("Indicator Name", [
+                    "Enhanced Teacher Deployment (PTR)", 
+                    "Increased Enrolment", 
+                    "Improved Teacher Professionalism",
+                    "Increased Functional Literacy",
+                    "Increase Science / Humanities Ratio",
+                    "Increase % of Female Enrolment"
+                ])
+                sim_latest = st.number_input("Simulated Latest Value (%)", value=45.0)
+                sim_target = st.number_input("Simulated 2026 Target (%)", value=100.0)
+                imp_gap = sim_target - sim_latest
 
-            if st.button("Analyze Risk Profile", type="primary"):
-                # Prediction Logic
+            if st.button("Generate Regional Analysis", type="primary"):
+                # 1. Prepare the raw input DataFrame
+                # The Pipeline will handle the scaling and encoding automatically!
                 input_df = pd.DataFrame({
-                    'Education_Level': [edu_level], 'Context_Name': [context],
+                    'Education_Level': [edu_level], 'Context_Name': [derived_belt],
                     'Total_Pop': [pop], 'Literacy_Rate': [lit_rate]
                 })
                 
-                processed_input = grip_prep.transform(input_df)
-                # Prediction Logic for GRIP
-                prob_risk = grip_model.predict_proba(processed_input)[0][1]
+                # 2. Get Probability from the Model
+                # [0][1] gets the probability of "High Risk"
+                prob_risk = grip_engine.predict_proba(input_df)[0][1]
 
-                # Hybrid Logic Layer
-                if imp_gap <= 0:
-                    final_status, risk_color = "LOW RISK: Target Met/Exceeded", "success"
-                elif "Science / Humanities Ratio" in indicator_name:
-                    final_status, risk_color = "HIGH RISK: Structural Anomaly", "error"
+                # Status Engine Logic
+                if imp_gap <= 5:
+                    status_label, status_color, text_color = "IMPRESSIVE: Target Nearly Met", "#00cc96", "white"
+                elif imp_gap > 35 or prob_risk > 0.90:
+                    status_label, status_color, text_color = "CRITICAL: Urgent Intervention Required", "#ef553b", "white"
                 else:
-                    final_status = "HIGH RISK: Intervention Required" if prob_risk >= 0.98 else "LOW RISK: Stable Trend"
-                    risk_color = "error" if prob_risk >= 0.98 else "success"
+                    status_label, status_color, text_color = "STABLE: Consistent Progress", "#ab63fa", "white"
 
                 st.write("---")
-                if risk_color == "success":
-                    st.success(f"### Result: {final_status}")
-                    st.balloons()
-                else:
-                    st.error(f"### Result: {final_status}")
                 
-                res_m1, res_m2 = st.columns(2)
-                res_m1.metric("Model Confidence", f"{prob_risk*100:.2f}%")
-                res_m2.metric("Projected Status", "Critical" if "HIGH" in final_status else "Healthy")
+                # Visual Gauge
+                fig = go.Figure(go.Indicator(
+                    mode = "gauge+number", value = sim_latest,
+                    title = {'text': f"{indicator_name} Progress", 'font': {'size': 18}},
+                    gauge = {
+                        'axis': {'range': [None, 100]},
+                        'bar': {'color': status_color},
+                        'threshold': {'line': {'color': "white", 'width': 4}, 'thickness': 0.75, 'value': sim_target}
+                    }
+                ))
+                fig.update_layout(height=300, paper_bgcolor="rgba(0,0,0,0)", font={'color': "white"})
+                st.plotly_chart(fig, use_container_width=True)
 
-                # --- GENERATE MINISTERIAL REPORT ---
-                report_content = f"""
-                GOVERNMENT OF GHANA - PROJECT GRIP RISK ANALYSIS
-                -----------------------------------------------
-                Indicator: {indicator_name}
-                Sector: {edu_level}
-                Region Context: {context}
-                Population Context: {pop:,}
-                Regional Literacy: {lit_rate}%
-                Current Implementation Gap: {imp_gap}
+                st.markdown(f"""<div class="status-card" style="background-color: {status_color}; color: {text_color};">
+                    <h3>{status_label}</h3></div>""", unsafe_allow_html=True)
                 
-                ANALYSIS RESULT: {final_status}
-                AI CONFIDENCE SCORE: {prob_risk*100:.2f}%
-                -----------------------------------------------
-                Generated by: Saviour Amegayie Portfolio Engine
-                """
-                
-                st.download_button(
-                    label="📄 Download Ministerial Risk Report",
-                    data=report_content,
-                    file_name=f"GRIP_Report_{indicator_name}.txt",
-                    mime="text/plain"
-                )
+                res_m1, res_m2, res_m3 = st.columns(3)
+                res_m1.metric("AI Risk Score", f"{prob_risk*100:.1f}%")
+                res_m2.metric("Remaining Gap", f"{imp_gap:.1f}%")
+                res_m3.metric("Status", "Critical" if "CRITICAL" in status_label else "Healthy")
+
+                # --- ENHANCED REPORT LAYOUT ---
+                with st.expander("📊 View Detailed Regional Analysis", expanded=True):
+                    # Determine color scheme based on status
+                    if "CRITICAL" in status_label:
+                        border_color = "#FF4B4B"
+                        bg_color = "#311010"
+                    elif "STABLE" in status_label:
+                        border_color = "#AB63FA"
+                        bg_color = "#1A1031"
+                    else:
+                        border_color = "#00CC96"
+                        bg_color = "#0A211B"
+
+                    # Header Section
+                    st.markdown(f"""
+                        <div style="border-left: 10px solid {border_color}; background-color: {bg_color}; padding: 20px; border-radius: 5px;">
+                            <h2 style="margin:0; color: white;">{selected_region} Regional Assessment</h2>
+                            <p style="font-size: 1.2rem; font-weight: bold; color: {border_color}; margin: 5px 0;">{status_label}</p>
+                        </div>
+                    """, unsafe_allow_html=True)
+
+                    # Metric Grid
+                    st.write("###")
+                    m_col1, m_col2, m_col3 = st.columns(3)
+    
+                    with m_col1:
+                        st.metric("Risk Probability", f"{prob_risk*100:.2f}%", delta="-High Risk", delta_color="inverse")
+                    with m_col2:
+                        st.metric("Target Gap", f"{imp_gap:.1f}%", help="Distance to 2026 Goal")
+                    with m_col3:
+                        st.metric("Priority Level", "P1 - Urgent" if "CRITICAL" in status_label else "P3 - Monitor")
+
+                    # Actionable Insight Box
+                    st.markdown(f"""
+                        <div style="background-color: #1e2130; padding: 15px; border-radius: 10px; border: 1px solid #3d4156; margin-top: 15px;">
+                            <span style="color: #808495; text-transform: uppercase; font-size: 0.8rem; font-weight: bold;">Executive Recommendation</span>
+                            <p style="margin-top: 8px; color: #E0E0E0;">
+                                The model identifies <b>{selected_region}</b> as a high-volatility zone for <i>{indicator_name}</i>. 
+                                Immediate resource reallocation is advised to close the <b>{imp_gap:.1f}%</b> gap before the 2026 deadline.
+                            </p>
+                        </div>
+                    """, unsafe_allow_html=True)
+                    # --- DEFINING THE MISSING VARIABLE ---
+                    report_content = f"""
+                    GRIP REGIONAL ASSESSMENT REPORT
+                    -------------------------------
+                    Region: {selected_region}
+                    Indicator: {indicator_name}
+                    Status: {status_label}
+                    Risk Score: {prob_risk*100:.2f}%
+                    Remaining Gap: {imp_gap:.1f}%
+                    
+                    Generated via Saviour Amegayie Data Portfolio
+                    """
+
+                    st.download_button(
+                        label="📄 Download Regional Report", 
+                        data=report_content, 
+                        file_name=f"GRIP_{selected_region}.txt"
+                    )
+                    
+    # Moved the source code link here, directly under the GRIP interactive section
+    st.link_button("📂 View GRIP Source Code", "https://github.com/Delkay-byte/Your-Repo-Name")
 
 # 5. About Me Page
 elif page == "About Me":

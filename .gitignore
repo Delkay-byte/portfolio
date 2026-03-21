@@ -1,3 +1,6 @@
 random_forest_model.pkl
 __pycache__/
 .venv/
+.DS_Store
+*.pyc
+.streamlit/
