@@ -251,7 +251,7 @@ elif page == "Projects":
     
     col_a, col_b = st.columns([1, 2])
     with col_a:
-        st.image("https://cdn-icons-png.flaticon.com/512/1532/1532556.png") 
+        st.image("GRIP.png") 
         st.write("**Role:** Lead Data Architect")
         st.write("**Engine:** Hybrid Intelligence (ML + Policy Logic)")
 
@@ -404,7 +404,7 @@ elif page == "Projects":
                         data=report_content, 
                         file_name=f"GRIP_{selected_region}.txt"
                     )
-                    
+
     # Moved the source code link here, directly under the GRIP interactive section
     st.link_button("📂 View GRIP Source Code", "https://github.com/Delkay-byte/Your-Repo-Name")
 
