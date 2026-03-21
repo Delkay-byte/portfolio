@@ -4,6 +4,8 @@ import pandas as pd
 import numpy as np
 import gdown  # New import
 import os     # New import
+def convert_to_dense(x):
+    return x.toarray() if hasattr(x, "toarray") else x
 
 # 1. Page Configuration
 st.set_page_config(page_title="Saviour Amegayie | Data Portfolio", page_icon="📊", layout="wide")
@@ -27,6 +29,16 @@ def load_assets():
     model = joblib.load(model_path)
     preprocessor = joblib.load(preprocessor_path)
     return model, preprocessor
+
+# --- LOAD PROJECT GRIP ASSETS ---
+# Loaded globally so they are available throughout the app
+try:
+    # Since we saved the 'engine' as a Pipeline, this loads EVERYTHING (prep + model)
+    grip_model = joblib.load('model_engine.pkl')
+    grip_prep = joblib.load('grip_preprocessor.pkl')
+    grip_assets_loaded = True
+except Exception as e:
+    grip_assets_loaded = False
 
 # --- CUSTOM CSS ---
 st.markdown("""
