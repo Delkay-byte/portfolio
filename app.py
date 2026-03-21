@@ -451,7 +451,7 @@ elif page == "Projects":
                             ]
 
                         for rec in recommendations:
-                            pdf.multi_cell(0, 8, rec)
+                            pdf.multi_cell(190, 8, rec)
 
                         # --- Footer ---
                         pdf.ln(10)
@@ -469,7 +469,7 @@ elif page == "Projects":
                         imp_gap, 
                         derived_belt
                     )
-                    
+
                     st.download_button(
                         label="📥 Download Formal PDF Report",
                         data=pdf_data,
