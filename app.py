@@ -386,23 +386,46 @@ elif page == "Projects":
                             </p>
                         </div>
                     """, unsafe_allow_html=True)
-                    # --- DEFINING THE MISSING VARIABLE ---
-                    report_content = f"""
-                    GRIP REGIONAL ASSESSMENT REPORT
-                    -------------------------------
-                    Region: {selected_region}
-                    Indicator: {indicator_name}
-                    Status: {status_label}
-                    Risk Score: {prob_risk*100:.2f}%
-                    Remaining Gap: {imp_gap:.1f}%
                     
-                    Generated via Saviour Amegayie Data Portfolio
-                    """
+                    def create_pdf_report(region, indicator, status, risk, gap, belt):
+                        pdf = FPDF()
+                        pdf.add_page()
+    
+                        # Header
+                        pdf.set_font("Arial", "B", 16)
+                        pdf.cell(190, 10, "PROJECT GRIP: REGIONAL ASSESSMENT", ln=True, align="C")
+                        pdf.set_font("Arial", "", 10)
+                        pdf.cell(190, 10, f"Generated for: Ghana Education Service (GES) | {pd.Timestamp.now().strftime('%Y-%m-%d')}", ln=True, align="C")
+                        pdf.line(10, 30, 200, 30)
+
+                        # Core Data
+                        pdf.set_font("Arial", "B", 12)
+                        pdf.ln(10)
+                        pdf.cell(100, 10, f"Region: {region}")
+                        pdf.cell(100, 10, f"Zone: {belt}", ln=True)
+                        pdf.cell(100, 10, f"Indicator: {indicator}", ln=True)
+    
+                        # Status Box (Highlighting the Risk)
+                        pdf.set_fill_color(239, 85, 59) if "CRITICAL" in status else pdf.set_fill_color(0, 204, 150)
+                        pdf.set_text_color(255, 255, 255)
+                        pdf.cell(190, 12, f"STATUS: {status}", border=1, ln=True, align="C", fill=True)
+    
+                        # Reset colors for the rest
+                        pdf.set_text_color(0, 0, 0)
+                        pdf.set_font("Arial", "", 11)
+                        pdf.ln(5)
+                        pdf.multi_cell(0, 10, f"The AI analysis shows a {risk:.2f}% risk of missing the 2026 target. "
+                                          f"There is currently a {gap:.1f}% gap remaining in performance.")
+                        return pdf.output(dest="S").encode("latin-1")
+                    
+                    # --- In your Streamlit code ---
+                    pdf_data = create_pdf_report(selected_region, indicator_name, status_label, prob_risk*100, imp_gap, derived_belt)
 
                     st.download_button(
-                        label="📄 Download Regional Report", 
-                        data=report_content, 
-                        file_name=f"GRIP_{selected_region}.txt"
+                        label="📥 Download Formal PDF Report",
+                        data=pdf_data,
+                        file_name=f"GRIP_Report_{selected_region}.pdf",
+                        mime="application/pdf"
                     )
 
     # Moved the source code link here, directly under the GRIP interactive section
