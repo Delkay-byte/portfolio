@@ -451,8 +451,8 @@ elif page == "Projects":
                             ]
 
                         for rec in recommendations:
-                            pdf.multi_cell(190, 8, rec)
-
+                            pdf.multi_cell(180, 8, rec, ln=True) 
+                            pdf.ln(2)
                         # --- Footer ---
                         pdf.ln(10)
                         pdf.set_font("Arial", "I", 8)
