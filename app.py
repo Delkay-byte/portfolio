@@ -251,7 +251,7 @@ elif page == "Projects":
     
     col_a, col_b = st.columns([1, 2])
     with col_a:
-        st.image("GRIP.png") 
+        st.image("grip_icon.png") 
         st.write("**Role:** Lead Data Architect")
         st.write("**Engine:** Hybrid Intelligence (ML + Policy Logic)")
 
