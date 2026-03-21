@@ -461,6 +461,15 @@ elif page == "Projects":
                         # Return as bytes for Streamlit
                         return bytes(pdf.output())
 
+                    pdf_data = create_pdf_report(
+                        selected_region, 
+                        indicator_name, 
+                        status_label, 
+                        prob_risk * 100, 
+                        imp_gap, 
+                        derived_belt
+                    )
+                    
                     st.download_button(
                         label="📥 Download Formal PDF Report",
                         data=pdf_data,
