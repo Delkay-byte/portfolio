@@ -417,7 +417,7 @@ elif page == "Projects":
                         pdf.ln(5)
                         pdf.multi_cell(0, 10, f"The AI analysis shows a {risk:.2f}% risk of missing the 2026 target. "
                                           f"There is currently a {gap:.1f}% gap remaining in performance.")
-                        return pdf.output(dest="S").encode("latin-1")
+                        return pdf.output()
                     
                     # --- In your Streamlit code ---
                     pdf_data = create_pdf_report(selected_region, indicator_name, status_label, prob_risk*100, imp_gap, derived_belt)
