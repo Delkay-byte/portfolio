@@ -588,27 +588,30 @@ elif page == "Projects":
     if uploaded_file is not None:
         # Use the robust try-except block here
         try:
-            # Added parameters to handle messy CSV formatting
-            st.session_state.df = pd.read_csv(uploaded_file, on_bad_lines='warn', skipinitialspace=True)
-            st.success("✅ Dataset updated successfully!")
+            # 1. Read the new file into a temporary dataframe
+            new_df = pd.read_csv(uploaded_file, on_bad_lines='warn', skipinitialspace=True)
             
-            # Re-sync local variables for the rest of the script
-            df = st.session_state.df
-            if 'Year' in df.columns:
-                current_year = df['Year'].iloc[0]
-            elif 'Target_Year' in df.columns:
-                current_year = df['Target_Year'].iloc[0]
+            # 2. Check if this is actually NEW data to prevent the rerun loop
+            # We compare the shape or a hash to see if it's different from current state
+            if not new_df.equals(st.session_state.get('df')):
+                st.session_state.df = new_df
+
+                # Re-sync local variables for the immediate cycle
+                df = st.session_state.df
+                if 'Year' in df.columns:
+                    current_year = df['Year'].iloc[0]
+
+                st.success("✅ Dataset updated successfully!")
+                # 3. Only rerun if the data actually changed
+                st.rerun()
                 
-            # Trigger a rerun to update all metrics immediately
-            st.rerun()
-            
+            # If the data is the same, we do nothing (stopping the loop)
         except Exception as e:
-            # This catches the ParserError and shows a helpful message instead of crashing
             st.error(f"❌ Error parsing CSV: {e}")
             st.info("💡 Tip: Ensure your CSV uses commas as delimiters and has no empty rows.")
     else:
-        # Ensure df is always synced even if no new file is uploaded
-        df = st.session_state.df
+        # Fallback to existing session data
+        df = st.session_state.df     
 
 
 # 5. About Me Page
