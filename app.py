@@ -582,3 +582,17 @@ with f2:
     st.caption("Built with [Streamlit](https://streamlit.io)")
 with f3:
     st.caption("Location: Akatsi, VR, Ghana 🇬🇭")
+
+# --- FOOTER / DISCLAIMER SECTION ---
+st.write("---")
+st.caption("""
+    **Data Privacy & Usage Disclaimer:** This portfolio and the **Project GRIP** (Ghana Resource Intelligence & Planning) dashboard are developed for 
+    demonstrative and strategic planning support within the **Ghana Education Service (GES)** framework. 
+    
+    1. **Data Accuracy:** AI-generated risks and recommendations are based on historical trends and 
+       machine learning models; they should be validated by regional directors before implementation.
+    2. **Privacy:** No sensitive student or personnel PII (Personally Identifiable Information) is stored or 
+       transmitted by this application.
+    3. **Institutional Alignment:** This tool is intended to complement existing GES Monitoring and 
+       Evaluation (M&E) protocols for the 2026 educational targets.
+""")
