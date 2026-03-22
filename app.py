@@ -313,62 +313,7 @@ elif page == "Projects":
     st.subheader(f"🛠️ GRIP: {current_year} Interactive Risk Simulator")
     st.info(f"Select a region to simulate {current_year} target feasibility based on current regional constraints.")
 
-    # --- DATA INPUT SELECTION ---
-    # --- MOVE DATA & SOURCE CONTROLS TO MAIN PAGE ---
-    st.write("---")
-    st.subheader("📁 Data & Source Management")
-
-    # Create three equal columns for a clean layout
-    btn_col1, btn_col2, btn_col3 = st.columns(3)
-
-    with btn_col1:
-        # 1. View Source Code
-        st.link_button("📂 View GRIP Source Code", "https://github.com/Delkay-byte/Your-Repo-Name", use_container_width=True)
-
     
-    # We create the sample data in memory
-    template_data = pd.DataFrame({
-        'Region': ['Volta', 'Ahafo', 'Ashanti', 'Greater Accra', 'Northern'],
-        'Indicator': ['ICT Infrastructure', 'ICT Infrastructure', 'ICT Infrastructure', 'ICT Infrastructure', 'ICT Infrastructure'],
-        'Year': [2027, 2027, 2027, 2027, 2027],
-        'Current_Value': [65.0, 42.0, 78.5, 88.0, 51.2],
-        'Target_2026': [100, 100, 100, 100, 100],
-        'Budget_Allocation': [50000, 30000, 75000, 90000, 45000]
-        })
-
-    # --- TEMPLATE DOWNLOAD ---
-    with btn_col2:
-        st.download_button(
-            label="📥 Download 2027 Template CSV",
-            data=template_data.to_csv(index=False),
-            file_name="GES_2027_Template.csv",
-            mime="text/csv",
-            use_container_width=True
-        )
-
-    with btn_col3:
-        # 3. New Data Upload 
-        uploaded_file = st.file_uploader("Upload New GES Dataset (CSV)", type=["csv"], label_visibility="collapsed")
-
-    # --- LOGIC TO UPDATE DATA ON MAIN PAGE ---
-    if uploaded_file is not None:
-        # Update the session state directly
-        st.session_state.df = pd.read_csv(uploaded_file)
-        st.success("✅ Dataset updated successfully!")
-    
-        # Re-sync local variables for the rest of the script
-        df = st.session_state.df
-        if 'Year' in df.columns:
-            current_year = df['Year'].iloc[0]
-        elif 'Target_Year' in df.columns:
-            current_year = df['Target_Year'].iloc[0]
-    
-        # Optional: Trigger a rerun to ensure all metrics on the page update immediately
-        st.rerun()
-    else:
-        # Ensure df is always synced even if no new file is uploaded
-        df = st.session_state.df
-
     # --- SIMPLIFIED GRIP LOGIC ---
     # We no longer try to load the files here, we just check if they loaded successfully at the top
     
@@ -577,12 +522,62 @@ elif page == "Projects":
                         derived_belt,
                         current_year  # This ensures the year 2027 or 2028 appears in the PDF
 )
-                    st.download_button(
-                        label="📥 Download Strategic Policy Report",
-                        data=pdf_report,
-                        file_name=f"GES_Report_{selected_region}_{current_year}.pdf",
-                        mime="application/pdf"
-                    )
+                    # --- DATA INPUT SELECTION ---
+    # --- MOVE DATA & SOURCE CONTROLS TO MAIN PAGE ---
+    st.write("---")
+    st.subheader("📁 Data & Source Management")
+
+    # Create three equal columns for a clean layout
+    btn_col1, btn_col2, btn_col3 = st.columns(3)
+
+    with btn_col1:
+        # 1. View Source Code
+        st.link_button("📂 View GRIP Source Code", "https://github.com/Delkay-byte/Your-Repo-Name", use_container_width=True)
+
+    
+    # We create the sample data in memory
+    template_data = pd.DataFrame({
+        'Region': ['Volta', 'Ahafo', 'Ashanti', 'Greater Accra', 'Northern'],
+        'Indicator': ['ICT Infrastructure', 'ICT Infrastructure', 'ICT Infrastructure', 'ICT Infrastructure', 'ICT Infrastructure'],
+        'Year': [2027, 2027, 2027, 2027, 2027],
+        'Current_Value': [65.0, 42.0, 78.5, 88.0, 51.2],
+        'Target_2026': [100, 100, 100, 100, 100],
+        'Budget_Allocation': [50000, 30000, 75000, 90000, 45000]
+        })
+
+    # --- TEMPLATE DOWNLOAD ---
+    with btn_col2:
+        st.download_button(
+            label="📥 Download 2027 Template CSV",
+            data=template_data.to_csv(index=False),
+            file_name="GES_2027_Template.csv",
+            mime="text/csv",
+            use_container_width=True
+        )
+
+    with btn_col3:
+        # 3. New Data Upload 
+        uploaded_file = st.file_uploader("Upload New GES Dataset (CSV)", type=["csv"], label_visibility="collapsed")
+
+    # --- LOGIC TO UPDATE DATA ON MAIN PAGE ---
+    if uploaded_file is not None:
+        # Update the session state directly
+        st.session_state.df = pd.read_csv(uploaded_file)
+        st.success("✅ Dataset updated successfully!")
+    
+        # Re-sync local variables for the rest of the script
+        df = st.session_state.df
+        if 'Year' in df.columns:
+            current_year = df['Year'].iloc[0]
+        elif 'Target_Year' in df.columns:
+            current_year = df['Target_Year'].iloc[0]
+    
+        # Optional: Trigger a rerun to ensure all metrics on the page update immediately
+        st.rerun()
+    else:
+        # Ensure df is always synced even if no new file is uploaded
+        df = st.session_state.df
+
 
     # --- GRIP DATA & SOURCE CONTROLS ---
     st.write("---")
