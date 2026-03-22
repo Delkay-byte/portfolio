@@ -428,13 +428,13 @@ elif page == "Projects":
                         </div>
                     """, unsafe_allow_html=True)
                     
-                    def create_pdf_report(region, indicator, status, risk, gap, belt):
+                    def create_pdf_report(region, indicator, status, risk, gap, belt, year):
                         pdf = FPDF()
                         pdf.add_page()
     
                         # --- Header ---
                         pdf.set_font("Arial", "B", 16)
-                        pdf.cell(190, 10, "PROJECT GRIP: REGIONAL ASSESSMENT", ln=True, align="C")
+                        pdf.cell(190, 10, f"PROJECT GRIP: {year} STRATEGIC ASSESSMENT", ln=True, align="C")
                         pdf.set_font("Arial", "", 10)
                         pdf.cell(190, 10, f"Strategic Report | Generated: {pd.Timestamp.now().strftime('%Y-%m-%d')}", ln=True, align="C")
                         pdf.line(10, 30, 200, 30)
@@ -471,8 +471,8 @@ elif page == "Projects":
                     
                         if "CRITICAL" in status:
                             recommendations = [
-                                f"1. Immediate Resource Realignment: Reallocate educational hardware/personnel to {region}.",
-                                "2. Accelerated Monitoring: Increase supervision frequency by 50% for this indicator.",
+                                f"1. Immediate Resource Realignment: Prioritize {region} for the {year} budget cycle.",
+                                "2. Focused Monitoring: Address the {gap:.1f}% gap before the end of Q4 {year}.",
                                 f"3. Belt-Level Intervention: Coordinate with {belt} directors for emergency funding.",
                                 "4. Risk Mitigation: Conduct a root-cause analysis on why the 2026 target is lagging."
                             ]
@@ -501,19 +501,25 @@ elif page == "Projects":
                         # Return as bytes for Streamlit
                         return bytes(pdf.output())
 
-                    pdf_data = create_pdf_report(
+                    # 1. First, make sure you've identified the year from the data
+                    # We use .iloc[0] to grab the year from the first row of the current dataframe
+                    current_year = df['Year'].iloc[0] 
+
+                    # 2. Generate the PDF object using your updated function
+                    # This prepares the data in memory before the user clicks download
+                    pdf_report = create_pdf_report(
                         selected_region, 
                         indicator_name, 
                         status_label, 
                         prob_risk * 100, 
                         imp_gap, 
-                        derived_belt
-                    )
-
+                        derived_belt,
+                        current_year  # This ensures the year 2027 or 2028 appears in the PDF
+)
                     st.download_button(
-                        label="📥 Download Formal PDF Report",
-                        data=pdf_data,
-                        file_name=f"GRIP_Report_{selected_region}.pdf",
+                        label="📥 Download Strategic Policy Report",
+                        data=pdf_report.output(dest='S').encode('latin-1'),
+                        file_name=f"GES_Report_{selected_region}_{current_year}.pdf",
                         mime="application/pdf"
                     )
 
