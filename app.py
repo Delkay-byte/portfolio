@@ -84,8 +84,15 @@ try:
 except:
     st.sidebar.write("📸 (Add your profile.jpeg to the folder)")
 
-# --- SIDEBAR STATUS & VISITOR COUNTER ---
+# --- SIDEBAR STATUS ---
 st.sidebar.success("✅ Available for Opportunities")
+
+# ADD THE VISITOR BADGE HERE
+st.markdown("""
+<div style="text-align: center;">
+    <img src="https://visitor-badge.laobi.icu/badge?page_id=Saviour-Amegayie-Portfolio&color=00cc96" alt="Visitor Count">
+</div>
+""", unsafe_allow_html=True)
 
 # --- SOCIAL ICONS SECTION ---
 st.sidebar.write("---")
