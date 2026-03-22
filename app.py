@@ -88,7 +88,7 @@ except:
 st.sidebar.success("✅ Available for Opportunities")
 
 # ADD THE VISITOR BADGE HERE
-st.markdown("""
+st.sidebar.markdown("""
 <div style="text-align: center;">
     <img src="https://visitor-badge.laobi.icu/badge?page_id=Saviour-Amegayie-Portfolio&color=00cc96" alt="Visitor Count">
 </div>
