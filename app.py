@@ -94,23 +94,6 @@ st.sidebar.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# --- DATA INPUT SELECTION ---
-st.sidebar.header("📁 Data Management")
-uploaded_file = st.sidebar.file_uploader("Upload New GES Dataset (CSV)", type=["csv"])
-
-if uploaded_file is not None:
-    # If a file is uploaded, use it!
-    df = pd.read_csv(uploaded_file)
-    st.sidebar.success("Using Uploaded Ministry Data")
-else:
-    try:
-        # Default to your original portfolio data
-        df = pd.read_csv("FINAL_MINISTERIAL_PREDICTOR_DATA.csv") 
-        st.sidebar.info("Using Official 2026 Strategy Data")
-    except FileNotFoundError:
-        st.sidebar.error("⚠️ Data file not found. Please upload a CSV.")
-        st.stop()
-
 # --- YEAR PROTECTION LOGIC ---
 # If the CSV has a 'Year' column, use it. If not, use 'Target_Year'. 
 # If neither exists, default to 2026 so the app doesn't crash.
@@ -120,26 +103,6 @@ elif 'Target_Year' in df.columns:
     current_year = df['Target_Year'].iloc[0]
 else:
     current_year = 2026
-
-# --- TEMPLATE DOWNLOAD ---
-st.sidebar.markdown("---")
-st.sidebar.write("### 📥 Need a Template?")
-# We create the sample data in memory
-template_data = pd.DataFrame({
-    'Region': ['Volta', 'Ahafo', 'Ashanti', 'Greater Accra', 'Northern'],
-    'Indicator': ['ICT Infrastructure', 'ICT Infrastructure', 'ICT Infrastructure', 'ICT Infrastructure', 'ICT Infrastructure'],
-    'Year': [2027, 2027, 2027, 2027, 2027],
-    'Current_Value': [65.0, 42.0, 78.5, 88.0, 51.2],
-    'Target_2026': [100, 100, 100, 100, 100],
-    'Budget_Allocation': [50000, 30000, 75000, 90000, 45000]
-})
-
-st.sidebar.download_button(
-    label="Download 2027 Template CSV",
-    data=template_data.to_csv(index=False),
-    file_name="GES_2027_Template.csv",
-    mime="text/csv"
-)
 
 # --- SOCIAL ICONS SECTION ---
 st.sidebar.write("---")
@@ -324,6 +287,44 @@ elif page == "Projects":
     st.write("---")
     st.subheader(f"🛠️ GRIP: {current_year} Interactive Risk Simulator")
     st.info(f"Select a region to simulate {current_year} target feasibility based on current regional constraints.")
+
+    # --- DATA INPUT SELECTION ---
+    st.sidebar.header("📁 Data Management")
+    uploaded_file = st.sidebar.file_uploader("Upload New GES Dataset (CSV)", type=["csv"])
+
+    if uploaded_file is not None:
+        # If a file is uploaded, use it!
+        df = pd.read_csv(uploaded_file)
+        st.sidebar.success("Using Uploaded Ministry Data")
+    else:
+        try:
+            # Default to your original portfolio data
+            df = pd.read_csv("FINAL_MINISTERIAL_PREDICTOR_DATA.csv") 
+            st.sidebar.info("Using Official 2026 Strategy Data")
+        except FileNotFoundError:
+            st.sidebar.error("⚠️ Data file not found. Please upload a CSV.")
+            st.stop()
+
+    # --- TEMPLATE DOWNLOAD ---
+    st.sidebar.markdown("---")
+    st.sidebar.write("### 📥 Need a Template?")
+    # We create the sample data in memory
+    template_data = pd.DataFrame({
+        'Region': ['Volta', 'Ahafo', 'Ashanti', 'Greater Accra', 'Northern'],
+        'Indicator': ['ICT Infrastructure', 'ICT Infrastructure', 'ICT Infrastructure', 'ICT Infrastructure', 'ICT Infrastructure'],
+        'Year': [2027, 2027, 2027, 2027, 2027],
+        'Current_Value': [65.0, 42.0, 78.5, 88.0, 51.2],
+        'Target_2026': [100, 100, 100, 100, 100],
+        'Budget_Allocation': [50000, 30000, 75000, 90000, 45000]
+        })
+
+    st.sidebar.download_button(
+        label="Download 2027 Template CSV",
+        data=template_data.to_csv(index=False),
+        file_name="GES_2027_Template.csv",
+        mime="text/csv"
+    )       
+
 
     # --- SIMPLIFIED GRIP LOGIC ---
     # We no longer try to load the files here, we just check if they loaded successfully at the top
@@ -537,8 +538,34 @@ elif page == "Projects":
                         mime="application/pdf"
                     )
 
-    # Moved the source code link here, directly under the GRIP interactive section
-    st.link_button("📂 View GRIP Source Code", "https://github.com/Delkay-byte/Your-Repo-Name")
+    # --- GRIP DATA & SOURCE CONTROLS ---
+    st.write("---")
+    # Create three equal columns for the buttons
+    btn_col1, btn_col2, btn_col3 = st.columns(3)
+
+    with btn_col1:
+        # 1. View Source Code
+        st.link_button("📂 View GRIP Source Code", "https://github.com/Delkay-byte/Your-Repo-Name", use_container_width=True)
+
+    with btn_col2:
+        # 2. Template Download
+        st.sidebar.markdown("---") # Optional: remove this line if moving out of sidebar
+        st.download_button(
+            label="📥 Download 2027 Template CSV",
+            data=template_data.to_csv(index=False),
+            file_name="GES_2027_Template.csv",
+            mime="text/csv",
+            use_container_width=True
+        )
+
+    with btn_col3:
+        # 3. New Data Upload (This will trigger a rerun when a file is picked)
+        # We use a unique key to prevent conflicts
+        st.file_uploader("Upload New GES Dataset", type=["csv"], label_visibility="collapsed", key="grip_uploader")
+
+    # Safety Check: If a file was uploaded via this new button, update 'df'
+    if st.session_state.get("grip_uploader") is not None:
+        df = pd.read_csv(st.session_state["grip_uploader"])
 
 # 5. About Me Page
 elif page == "About Me":
