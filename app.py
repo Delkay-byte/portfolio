@@ -548,9 +548,9 @@ elif page == "Projects":
     # --- TEMPLATE DOWNLOAD ---
     with btn_col2:
         st.download_button(
-            label="📥 Download 2027 Template CSV",
+            label="📥 Download Template CSV",
             data=template_data.to_csv(index=False),
-            file_name="GES_2027_Template.csv",
+            file_name="GES_Template.csv",
             mime="text/csv",
             use_container_width=True
         )
@@ -579,35 +579,7 @@ elif page == "Projects":
         df = st.session_state.df
 
 
-    # --- GRIP DATA & SOURCE CONTROLS ---
-    st.write("---")
-    # Create three equal columns for the buttons
-    btn_col1, btn_col2, btn_col3 = st.columns(3)
-
-    with btn_col1:
-        # 1. View Source Code
-        st.link_button("📂 View GRIP Source Code", "https://github.com/Delkay-byte/Your-Repo-Name", use_container_width=True)
-
-    with btn_col2:
-        # 2. Template Download
-        st.download_button(
-            label="📥 Download 2027 Template CSV",
-            data=template_data.to_csv(index=False),
-            file_name="GES_2027_Template.csv",
-            mime="text/csv",
-            use_container_width=True
-        )
-
-    with btn_col3:
-        # 3. New Data Upload (This will trigger a rerun when a file is picked)
-        # We use a unique key to prevent conflicts
-        st.file_uploader("Upload New GES Dataset", type=["csv"], label_visibility="collapsed", key="grip_uploader")
-
-    # Safety Check: If a file was uploaded via this new button, update 'df'
-    if st.session_state.get("grip_uploader") is not None:
-        if uploaded_grip:
-            st.session_state.df = pd.read_csv(uploaded_grip)
-            st.rerun()
+   
 # 5. About Me Page
 elif page == "About Me":
     st.title("My Journey")
