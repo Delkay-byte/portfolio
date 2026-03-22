@@ -387,11 +387,8 @@ elif page == "Projects":
                 fig.update_layout(height=300, paper_bgcolor="rgba(0,0,0,0)", font={'color': "white"})
                 st.plotly_chart(fig, use_container_width=True)
 
-                st.markdown(f"""<div class="status-card" style="background-color: {status_color}; color: {text_color};">
-                    <h3>{status_label}</h3></div>""", unsafe_allow_html=True)
+                st.markdown(f'<div class="status-card" style="background-color: {status_color};"><h3>{status_label}</h3></div>', unsafe_allow_html=True)
                 
-                
-
 
                 res_m1, res_m2, res_m3 = st.columns(3)
                 res_m1.metric("AI Risk Score", f"{prob_risk*100:.1f}%")
@@ -440,18 +437,6 @@ elif page == "Projects":
                             </p>
                         </div>
                     """, unsafe_allow_html=True)
-                    
-                    # 4. Generate & Show PDF Download Button
-                    pdf_report = create_pdf_report(selected_region, indicator_name, status_label, prob_risk*100, imp_gap, derived_belt, current_year)
-                
-                    st.download_button(
-                        label="📥 Download Strategic Policy Report",
-                        data=pdf_report,
-                        file_name=f"GRIP_Report_{selected_region}.pdf",
-                        mime="application/pdf",
-                        key="grip_report_download_final"
-                    )
-
 
 
                     def create_pdf_report(region, indicator, status, risk, gap, belt, year):
@@ -545,6 +530,20 @@ elif page == "Projects":
                         derived_belt,
                         current_year  # This ensures the year 2027 or 2028 appears in the PDF
 )
+                    
+                    # 4. Generate & Show PDF Download Button
+                    pdf_report = create_pdf_report(selected_region, indicator_name, status_label, prob_risk*100, imp_gap, derived_belt, current_year)
+                
+                    st.download_button(
+                        label="📥 Download Strategic Policy Report",
+                        data=pdf_report,
+                        file_name=f"GRIP_Report_{selected_region}.pdf",
+                        mime="application/pdf",
+                        key="grip_report_download_final"
+                    )
+
+
+
                     # --- DATA INPUT SELECTION ---
     # --- MOVE DATA & SOURCE CONTROLS TO MAIN PAGE ---
     st.write("---")
