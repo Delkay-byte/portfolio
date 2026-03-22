@@ -390,16 +390,7 @@ elif page == "Projects":
                 st.markdown(f"""<div class="status-card" style="background-color: {status_color}; color: {text_color};">
                     <h3>{status_label}</h3></div>""", unsafe_allow_html=True)
                 
-                # 4. Generate & Show PDF Download Button
-                pdf_report = create_pdf_report(selected_region, indicator_name, status_label, prob_risk*100, imp_gap, derived_belt, current_year)
                 
-                st.download_button(
-                    label="📥 Download Strategic Policy Report",
-                    data=pdf_report,
-                    file_name=f"GRIP_Report_{selected_region}.pdf",
-                    mime="application/pdf",
-                    key="grip_report_download_final"
-                )
 
 
                 res_m1, res_m2, res_m3 = st.columns(3)
@@ -450,6 +441,19 @@ elif page == "Projects":
                         </div>
                     """, unsafe_allow_html=True)
                     
+                    # 4. Generate & Show PDF Download Button
+                    pdf_report = create_pdf_report(selected_region, indicator_name, status_label, prob_risk*100, imp_gap, derived_belt, current_year)
+                
+                    st.download_button(
+                        label="📥 Download Strategic Policy Report",
+                        data=pdf_report,
+                        file_name=f"GRIP_Report_{selected_region}.pdf",
+                        mime="application/pdf",
+                        key="grip_report_download_final"
+                    )
+
+
+
                     def create_pdf_report(region, indicator, status, risk, gap, belt, year):
                         pdf = FPDF()
                         pdf.add_page()
