@@ -103,9 +103,23 @@ if uploaded_file is not None:
     df = pd.read_csv(uploaded_file)
     st.sidebar.success("Using Uploaded Ministry Data")
 else:
-    # Default to your original portfolio data
-    df = pd.read_csv("data.csv") 
-    st.sidebar.info("Using Default 2026 Strategy Data")
+    try:
+        # Default to your original portfolio data
+        df = pd.read_csv("FINAL_MINISTERIAL_PREDICTOR_DATA.csv") 
+        st.sidebar.info("Using Official 2026 Strategy Data")
+    except FileNotFoundError:
+        st.sidebar.error("⚠️ Data file not found. Please upload a CSV.")
+        st.stop()
+
+# --- YEAR PROTECTION LOGIC ---
+# If the CSV has a 'Year' column, use it. If not, use 'Target_Year'. 
+# If neither exists, default to 2026 so the app doesn't crash.
+if 'Year' in df.columns:
+    current_year = df['Year'].iloc[0]
+elif 'Target_Year' in df.columns:
+    current_year = df['Target_Year'].iloc[0]
+else:
+    current_year = 2026
 
 # --- TEMPLATE DOWNLOAD ---
 st.sidebar.markdown("---")
@@ -308,8 +322,8 @@ elif page == "Projects":
         """)
     
     st.write("---")
-    st.subheader("🛠️ GRIP: Interactive Risk Simulator")
-    st.info("Select a specific region to simulate 2026 target feasibility and identify resource gaps.")
+    st.subheader(f"🛠️ GRIP: {current_year} Interactive Risk Simulator")
+    st.info(f"Select a region to simulate {current_year} target feasibility based on current regional constraints.")
 
     # --- SIMPLIFIED GRIP LOGIC ---
     # We no longer try to load the files here, we just check if they loaded successfully at the top
@@ -422,8 +436,8 @@ elif page == "Projects":
                         <div style="background-color: #1e2130; padding: 15px; border-radius: 10px; border: 1px solid #3d4156; margin-top: 15px;">
                             <span style="color: #808495; text-transform: uppercase; font-size: 0.8rem; font-weight: bold;">Executive Recommendation</span>
                             <p style="margin-top: 8px; color: #E0E0E0;">
-                                The model identifies <b>{selected_region}</b> as a high-volatility zone for <i>{indicator_name}</i>. 
-                                Immediate resource reallocation is advised to close the <b>{imp_gap:.1f}%</b> gap before the 2026 deadline.
+                                The model identifies <b>{selected_region}</b> as a high-volatility zone for <i>{indicator_name}</i> in the <b>{current_year}</b> cycle. 
+                                Immediate resource reallocation is advised to close the <b>{imp_gap:.1f}%</b> gap before the <b>{current_year}</b> deadline.
                             </p>
                         </div>
                     """, unsafe_allow_html=True)
@@ -518,7 +532,7 @@ elif page == "Projects":
 )
                     st.download_button(
                         label="📥 Download Strategic Policy Report",
-                        data=pdf_report.output(dest='S').encode('latin-1'),
+                        data=pdf_report,
                         file_name=f"GES_Report_{selected_region}_{current_year}.pdf",
                         mime="application/pdf"
                     )
