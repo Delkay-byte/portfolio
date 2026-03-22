@@ -94,6 +94,19 @@ st.sidebar.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
+# --- DATA INPUT SELECTION ---
+st.sidebar.header("📁 Data Management")
+uploaded_file = st.sidebar.file_uploader("Upload New GES Dataset (CSV)", type=["csv"])
+
+if uploaded_file is not None:
+    # If a file is uploaded, use it!
+    df = pd.read_csv(uploaded_file)
+    st.sidebar.success("Using Uploaded Ministry Data")
+else:
+    # Default to your original portfolio data
+    df = pd.read_csv("data.csv") 
+    st.sidebar.info("Using Default 2026 Strategy Data")
+    
 # --- SOCIAL ICONS SECTION ---
 st.sidebar.write("---")
 st.sidebar.subheader("Connect with Me")
