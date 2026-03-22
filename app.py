@@ -586,19 +586,26 @@ elif page == "Projects":
 
     # --- LOGIC TO UPDATE DATA ON MAIN PAGE ---
     if uploaded_file is not None:
-        # Update the session state directly
-        st.session_state.df = pd.read_csv(uploaded_file)
-        st.success("✅ Dataset updated successfully!")
-    
-        # Re-sync local variables for the rest of the script
-        df = st.session_state.df
-        if 'Year' in df.columns:
-            current_year = df['Year'].iloc[0]
-        elif 'Target_Year' in df.columns:
-            current_year = df['Target_Year'].iloc[0]
-    
-        # Optional: Trigger a rerun to ensure all metrics on the page update immediately
-        st.rerun()
+        # Use the robust try-except block here
+        try:
+            # Added parameters to handle messy CSV formatting
+            st.session_state.df = pd.read_csv(uploaded_file, on_bad_lines='warn', skipinitialspace=True)
+            st.success("✅ Dataset updated successfully!")
+            
+            # Re-sync local variables for the rest of the script
+            df = st.session_state.df
+            if 'Year' in df.columns:
+                current_year = df['Year'].iloc[0]
+            elif 'Target_Year' in df.columns:
+                current_year = df['Target_Year'].iloc[0]
+                
+            # Trigger a rerun to update all metrics immediately
+            st.rerun()
+            
+        except Exception as e:
+            # This catches the ParserError and shows a helpful message instead of crashing
+            st.error(f"❌ Error parsing CSV: {e}")
+            st.info("💡 Tip: Ensure your CSV uses commas as delimiters and has no empty rows.")
     else:
         # Ensure df is always synced even if no new file is uploaded
         df = st.session_state.df
