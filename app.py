@@ -483,9 +483,9 @@ elif page == "Projects":
                         if "CRITICAL" in status:
                             recommendations = [
                                 f"1. Immediate Resource Realignment: Prioritize {region} for the {year} budget cycle.",
-                                "2. Focused Monitoring: Address the {gap:.1f}% gap before the end of Q4 {year}.",
+                                f"2. Focused Monitoring: Address the {gap:.1f}% gap before the end of Q4 {year}.", # FIXED: Added 'f'
                                 f"3. Belt-Level Intervention: Coordinate with {belt} directors for emergency funding.",
-                                "4. Risk Mitigation: Conduct a root-cause analysis on why the 2026 target is lagging."
+                                f"4. Risk Mitigation: Conduct a root-cause analysis on why the 2026 target is lagging."
                             ]
                         elif "STABLE" in status:
                             recommendations = [
