@@ -45,6 +45,30 @@ def load_grip_engine():
 # Call the function globally
 grip_engine, median_ref, grip_assets_loaded = load_grip_engine()
 
+# --- GLOBAL DATA INITIALIZATION ---
+DEFAULT_DATA_PATH = "FINAL_MINISTERIAL_PREDICTOR_DATA.csv"
+
+# 1. Initialize session state if empty
+if 'df' not in st.session_state:
+    try:
+        st.session_state.df = pd.read_csv(DEFAULT_DATA_PATH)
+    except FileNotFoundError:
+        # Emergency fallback if the file isn't found
+        st.session_state.df = pd.DataFrame(columns=['Year', 'Target_Year', 'Region'])
+df = st.session_state.df
+
+# 3. Global Year Protection Logic (Fixes NameError)
+if not df.empty:
+    if 'Year' in df.columns:
+        current_year = df['Year'].iloc[0]
+    elif 'Target_Year' in df.columns:
+        current_year = df['Target_Year'].iloc[0]
+    else:
+        current_year = 2026
+else:
+    current_year = 2026
+
+
 # Mapping Regions to Belts for Automation
 REGION_CONTEXT_MAP = {
     'Ahafo': 'Middle Belt', 'Ashanti': 'Middle Belt', 'Bono': 'Middle Belt', 'Bono East': 'Middle Belt',
@@ -266,7 +290,8 @@ elif page == "Projects":
 
     # --- PROJECT 2: PROJECT GRIP (Ministerial Resource Predictor) ---
     st.header("2. Project GRIP: Ministerial Resource Predictor 🇬🇭")
-    
+    st.subheader(f"🛠️ GRIP: {current_year} Interactive Risk Simulator")
+
     col_a, col_b = st.columns([1, 2])
     with col_a:
         st.image("grip_icon.png") 
@@ -289,25 +314,18 @@ elif page == "Projects":
     st.info(f"Select a region to simulate {current_year} target feasibility based on current regional constraints.")
 
     # --- DATA INPUT SELECTION ---
-    st.sidebar.header("📁 Data Management")
-    uploaded_file = st.sidebar.file_uploader("Upload New GES Dataset (CSV)", type=["csv"])
+    # --- MOVE DATA & SOURCE CONTROLS TO MAIN PAGE ---
+    st.write("---")
+    st.subheader("📁 Data & Source Management")
 
-    if uploaded_file is not None:
-        # If a file is uploaded, use it!
-        df = pd.read_csv(uploaded_file)
-        st.sidebar.success("Using Uploaded Ministry Data")
-    else:
-        try:
-            # Default to your original portfolio data
-            df = pd.read_csv("FINAL_MINISTERIAL_PREDICTOR_DATA.csv") 
-            st.sidebar.info("Using Official 2026 Strategy Data")
-        except FileNotFoundError:
-            st.sidebar.error("⚠️ Data file not found. Please upload a CSV.")
-            st.stop()
+    # Create three equal columns for a clean layout
+    btn_col1, btn_col2, btn_col3 = st.columns(3)
 
-    # --- TEMPLATE DOWNLOAD ---
-    st.sidebar.markdown("---")
-    st.sidebar.write("### 📥 Need a Template?")
+    with btn_col1:
+        # 1. View Source Code
+        st.link_button("📂 View GRIP Source Code", "https://github.com/Delkay-byte/Your-Repo-Name", use_container_width=True)
+
+    
     # We create the sample data in memory
     template_data = pd.DataFrame({
         'Region': ['Volta', 'Ahafo', 'Ashanti', 'Greater Accra', 'Northern'],
@@ -318,13 +336,38 @@ elif page == "Projects":
         'Budget_Allocation': [50000, 30000, 75000, 90000, 45000]
         })
 
-    st.sidebar.download_button(
-        label="Download 2027 Template CSV",
-        data=template_data.to_csv(index=False),
-        file_name="GES_2027_Template.csv",
-        mime="text/csv"
-    )       
+    # --- TEMPLATE DOWNLOAD ---
+    with btn_col2:
+        st.download_button(
+            label="📥 Download 2027 Template CSV",
+            data=template_data.to_csv(index=False),
+            file_name="GES_2027_Template.csv",
+            mime="text/csv",
+            use_container_width=True
+        )
 
+    with btn_col3:
+        # 3. New Data Upload 
+        uploaded_file = st.file_uploader("Upload New GES Dataset (CSV)", type=["csv"], label_visibility="collapsed")
+
+    # --- LOGIC TO UPDATE DATA ON MAIN PAGE ---
+    if uploaded_file is not None:
+        # Update the session state directly
+        st.session_state.df = pd.read_csv(uploaded_file)
+        st.success("✅ Dataset updated successfully!")
+    
+        # Re-sync local variables for the rest of the script
+        df = st.session_state.df
+        if 'Year' in df.columns:
+            current_year = df['Year'].iloc[0]
+        elif 'Target_Year' in df.columns:
+            current_year = df['Target_Year'].iloc[0]
+    
+        # Optional: Trigger a rerun to ensure all metrics on the page update immediately
+        st.rerun()
+    else:
+        # Ensure df is always synced even if no new file is uploaded
+        df = st.session_state.df
 
     # --- SIMPLIFIED GRIP LOGIC ---
     # We no longer try to load the files here, we just check if they loaded successfully at the top
@@ -518,8 +561,11 @@ elif page == "Projects":
 
                     # 1. First, make sure you've identified the year from the data
                     # We use .iloc[0] to grab the year from the first row of the current dataframe
-                    current_year = df['Year'].iloc[0] 
-
+                    # 1. Final check for year consistency
+                    try:
+                        current_year = df['Year'].iloc[0] if 'Year' in df.columns else 2026
+                    except:
+                        current_year = 2026
                     # 2. Generate the PDF object using your updated function
                     # This prepares the data in memory before the user clicks download
                     pdf_report = create_pdf_report(
@@ -549,7 +595,6 @@ elif page == "Projects":
 
     with btn_col2:
         # 2. Template Download
-        st.sidebar.markdown("---") # Optional: remove this line if moving out of sidebar
         st.download_button(
             label="📥 Download 2027 Template CSV",
             data=template_data.to_csv(index=False),
@@ -565,8 +610,9 @@ elif page == "Projects":
 
     # Safety Check: If a file was uploaded via this new button, update 'df'
     if st.session_state.get("grip_uploader") is not None:
-        df = pd.read_csv(st.session_state["grip_uploader"])
-
+        if uploaded_grip:
+            st.session_state.df = pd.read_csv(uploaded_grip)
+            st.rerun()
 # 5. About Me Page
 elif page == "About Me":
     st.title("My Journey")
