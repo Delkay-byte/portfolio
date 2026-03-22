@@ -106,7 +106,27 @@ else:
     # Default to your original portfolio data
     df = pd.read_csv("data.csv") 
     st.sidebar.info("Using Default 2026 Strategy Data")
-    
+
+# --- TEMPLATE DOWNLOAD ---
+st.sidebar.markdown("---")
+st.sidebar.write("### 📥 Need a Template?")
+# We create the sample data in memory
+template_data = pd.DataFrame({
+    'Region': ['Volta', 'Ahafo', 'Ashanti', 'Greater Accra', 'Northern'],
+    'Indicator': ['ICT Infrastructure', 'ICT Infrastructure', 'ICT Infrastructure', 'ICT Infrastructure', 'ICT Infrastructure'],
+    'Year': [2027, 2027, 2027, 2027, 2027],
+    'Current_Value': [65.0, 42.0, 78.5, 88.0, 51.2],
+    'Target_2026': [100, 100, 100, 100, 100],
+    'Budget_Allocation': [50000, 30000, 75000, 90000, 45000]
+})
+
+st.sidebar.download_button(
+    label="Download 2027 Template CSV",
+    data=template_data.to_csv(index=False),
+    file_name="GES_2027_Template.csv",
+    mime="text/csv"
+)
+
 # --- SOCIAL ICONS SECTION ---
 st.sidebar.write("---")
 st.sidebar.subheader("Connect with Me")
