@@ -8,6 +8,13 @@ import os     # New import
 def convert_to_dense(x):
     return x.toarray() if hasattr(x, "toarray") else x
 
+# --- "Generate Regional Analysis" button ---
+def create_pdf_report(region, indicator, status, risk, gap, belt, year):
+    pdf = FPDF()
+    pdf.add_page()
+    # ... (all your existing PDF code)
+    return bytes(pdf.output())
+
 # 1. Page Configuration
 st.set_page_config(page_title="Saviour Amegayie | Data Portfolio", page_icon="📊", layout="wide")
 
@@ -383,6 +390,18 @@ elif page == "Projects":
                 st.markdown(f"""<div class="status-card" style="background-color: {status_color}; color: {text_color};">
                     <h3>{status_label}</h3></div>""", unsafe_allow_html=True)
                 
+                # 4. Generate & Show PDF Download Button
+                pdf_report = create_pdf_report(selected_region, indicator_name, status_label, prob_risk*100, imp_gap, derived_belt, current_year)
+                
+                st.download_button(
+                    label="📥 Download Strategic Policy Report",
+                    data=pdf_report,
+                    file_name=f"GRIP_Report_{selected_region}.pdf",
+                    mime="application/pdf",
+                    key="grip_report_download_final"
+                )
+
+
                 res_m1, res_m2, res_m3 = st.columns(3)
                 res_m1.metric("AI Risk Score", f"{prob_risk*100:.1f}%")
                 res_m2.metric("Remaining Gap", f"{imp_gap:.1f}%")
@@ -540,6 +559,9 @@ elif page == "Projects":
         'Region': ['Volta', 'Ahafo', 'Ashanti', 'Greater Accra', 'Northern'],
         'Indicator': ['ICT Infrastructure', 'ICT Infrastructure', 'ICT Infrastructure', 'ICT Infrastructure', 'ICT Infrastructure'],
         'Year': [2027, 2027, 2027, 2027, 2027],
+        'Education_Level': ['Basic Education', 'Basic Education', 'Secondary Education', 'Secondary Education', 'Technical and Vocational'],
+        'Total_Pop': [850000, 620000, 1200000, 1500000, 950000],
+        'Literacy_Rate': [68.5, 52.0, 75.8, 88.2, 45.5],
         'Current_Value': [65.0, 42.0, 78.5, 88.0, 51.2],
         'Target_2026': [100, 100, 100, 100, 100],
         'Budget_Allocation': [50000, 30000, 75000, 90000, 45000]
@@ -579,7 +601,6 @@ elif page == "Projects":
         df = st.session_state.df
 
 
-   
 # 5. About Me Page
 elif page == "About Me":
     st.title("My Journey")
