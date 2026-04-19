@@ -401,19 +401,18 @@ elif page == "Projects":
                 </div>
                 """, unsafe_allow_html=True)
 
-                # --- PDF FUNCTION (CLEAN FIX) ---
-            def create_pdf_report():
-                pdf = FPDF()
-                pdf.add_page()
-                pdf.set_font("Arial", size=12)
-                pdf.cell(0, 10, f"{selected_region} - {status_label}", ln=True)
-                return bytes(pdf.output())
+                def create_grip_pdf(region, status):
+                    pdf = FPDF()
+                    pdf.add_page()
+                    pdf.set_font("Arial", size=12)
+                    pdf.cell(0, 10, f"{region} - {status}", ln=True)
+                    return bytes(pdf.output())
 
-            st.download_button(
-                "📥 Download Report",
-                create_pdf_report(),
-                file_name="GRIP_Report.pdf"
-            )
+                st.download_button(
+                    "📥 Download Report",
+                    create_grip_pdf(selected_region, status_label),
+                    file_name="GRIP_Report.pdf"
+                )
 
     # --- RESOURCE OPTIMIZER ---
     st.write("---")
