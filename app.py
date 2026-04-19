@@ -506,14 +506,25 @@ elif page == "Projects":
     Click the button below to launch the live system and interact with the predictive engine.
     """)
 
-    # Call-to-action button
-    st.link_button(
-    "🚀 Launch EduPulse Live App",
-    "https://bece-edupulse-analyzer.streamlit.app/",
-    use_container_width=True
-    )
-    st.success("✅ Live | Deployed | Recruiter-Tested")
-    st.caption("🔗 Opens in a new tab | Fully interactive Streamlit application")
+    # --- BUTTON ROW ---
+    btn1, btn2 = st.columns(2)
+
+    with btn1:
+        st.link_button(
+            "🚀 Launch Live App",
+            "https://bece-edupulse-analyzer.streamlit.app/",
+            use_container_width=True
+        )
+
+    with btn2:
+        st.link_button(
+            "💻 View GitHub Repo",
+            "https://github.com/Delkay-byte/EduPulse-Analyzer",  # 🔁 replace this
+            use_container_width=True
+        )
+
+    st.success("✅ Live | Deployed | Recruiter-Ready")
+    st.caption("🔗 Opens in a new tab | Interactive AI system")
 
 
 # 5. About Me Page
