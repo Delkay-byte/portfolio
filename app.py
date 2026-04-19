@@ -705,18 +705,7 @@ if 'df' in st.session_state:
         # Fallback to existing session data
         df = st.session_state.df     
 
-    # ... (Inside your EduPulse section) ...
-
-    st.write("---")
-    st.header("🎓 EduPulse: Live Interactive Playground")
-    st.info("💡 **Recruiter Tip:** You can log in as a Director or Headteacher right here to test the predictive engine.")
-
-    # This creates the interactive window
-    # Replace the URL with your actual deployed app link
-    components.iframe("https://bece-edupulse-analyzer.streamlit.app", height=800, scrolling=True)
-
-    st.caption("Can't see the app? [Click here to open in a new tab](https://bece-edupulse-analyzer.streamlit.app/)")
-
+    
 
 # 5. About Me Page
 elif page == "About Me":
