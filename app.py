@@ -494,7 +494,7 @@ elif page == "Projects":
         st.markdown("""
         **EduPulse** is an intelligent education analytics platform designed to support **data-driven decision-making** across Ghana’s education system.
 
-        It leverages **Machine Learning** + **Policy Logic** to:
+        It leverages Machine Learning + Policy Logic to:
     
     - 📊 Predict student performance outcomes (BECE focus)
     - 🧠 Identify at-risk schools in both circuits and District/Municipality
