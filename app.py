@@ -5,6 +5,8 @@ import pandas as pd
 import numpy as np
 import gdown  # New import
 import os     # New import
+import streamlit.components.v1 as components
+
 def convert_to_dense(x):
     return x.toarray() if hasattr(x, "toarray") else x
 
@@ -14,6 +16,26 @@ def create_pdf_report(region, indicator, status, risk, gap, belt, year):
     pdf.add_page()
     # ... (all your existing PDF code)
     return bytes(pdf.output())
+
+
+# --- RESOURCE OPTIMIZER ---
+def allocate_resources(df, total_budget):
+    # Calculate priority based on risk (Higher risk = higher priority)
+    # Note: We use 'Implementation_Gap' and 'Implementation_Gap' as proxies here
+    # In a real run, we would merge this with your ML Risk_Probability scores
+    df['Priority_Score'] = df['Implementation_Gap'] * 0.95 # Using a high-weight factor
+    total_priority = df['Priority_Score'].sum()
+    
+    if total_priority == 0:
+        df['Final_Approved_Intervention'] = 0
+        return df
+        
+    df['Suggested_Allocation'] = (df['Priority_Score'] / total_priority) * total_budget
+    df['Final_Approved_Intervention'] = np.minimum(df['Suggested_Allocation'], df['Implementation_Gap'])
+    df['Final_Approved_Intervention'] = df['Final_Approved_Intervention'].round(0)
+    
+    return df
+# -----------------------------------------
 
 # 1. Page Configuration
 st.set_page_config(page_title="Saviour Amegayie | Data Portfolio", page_icon="📊", layout="wide")
@@ -443,36 +465,58 @@ elif page == "Projects":
                         pdf = FPDF()
                         pdf.add_page()
     
-                        # --- Header ---
-                        pdf.set_font("Arial", "B", 16)
-                        pdf.cell(190, 10, f"PROJECT GRIP: {year} STRATEGIC ASSESSMENT", ln=True, align="C")
-                        pdf.set_font("Arial", "", 10)
-                        pdf.cell(190, 10, f"Strategic Report | Generated: {pd.Timestamp.now().strftime('%Y-%m-%d')}", ln=True, align="C")
-                        pdf.line(10, 30, 200, 30)
-
-                        # --- Summary Data ---
-                        pdf.ln(10)
-                        pdf.set_font("Arial", "B", 12)
-                        pdf.cell(95, 10, f"Region: {region}")
-                        pdf.cell(95, 10, f"Zone: {belt}", ln=True)
-                        pdf.cell(190, 10, f"Indicator: {indicator}", ln=True)
+                        # --- BRANDING HEADER ---
+                        pdf.set_fill_color(0, 204, 150) # BloomCore Teal
+                        pdf.rect(0, 0, 210, 40, 'F')
     
-                        # --- Status Box ---
-                        # Red for Critical, Green for others
-                        if "CRITICAL" in status:
-                            pdf.set_fill_color(239, 85, 59) 
-                        else:
-                            pdf.set_fill_color(0, 204, 150)
-        
+                        pdf.set_font("Arial", 'B', 24)
                         pdf.set_text_color(255, 255, 255)
-                        pdf.cell(190, 12, f"STATUS: {status}", border=1, ln=True, align="C", fill=True)
+                        pdf.cell(0, 20, "PROJECT GRIP", ln=True, align='C')
+                        pdf.set_font("Arial", size=12)
+                        pdf.cell(0, 10, "GES Resource Intervention Predictor", ln=True, align='C')
     
-                        # --- Risk Analytics ---
+                        # --- REPORT BODY ---
                         pdf.set_text_color(0, 0, 0)
-                        pdf.set_font("Arial", "", 11)
+                        pdf.ln(20)
+                        pdf.set_font("Arial", 'B', 14)
+                        pdf.cell(0, 10, f"Strategic Analysis: {region} Region", ln=True)
+                        pdf.line(10, pdf.get_y(), 200, pdf.get_y()) # Horizontal line
+    
                         pdf.ln(5)
-                        pdf.multi_cell(0, 8, f"The Hybrid Intelligence engine indicates a {risk:.2f}% risk factor. "
-                                                f"The current implementation gap stands at {gap:.1f}%.")
+                        pdf.set_font("Arial", size=11)
+    
+                        # Data Table Style
+                        data = [
+                            ["Indicator", indicator],
+                            ["Current Status", status],
+                            ["Risk Level", f"{risk:.2g}%"],
+                            ["Implementation Gap", f"{gap:,.0f} units"],
+                            ["Administrative Belt", belt]
+                        ]
+    
+                        for row in data:
+                            pdf.set_font("Arial", 'B', 11)
+                            pdf.cell(50, 10, row[0], border=1)
+                            pdf.set_font("Arial", size=11)
+                            pdf.cell(130, 10, str(row[1]), border=1, ln=True)
+    
+                        # --- RECOMMENDATIONS ---
+                        pdf.ln(10)
+                        pdf.set_font("Arial", 'B', 12)
+                        pdf.cell(0, 10, "Ministerial Action Plan:", ln=True)
+                        pdf.set_font("Arial", 'I', 11)
+    
+                        rec = (f"Based on the {risk:.2g}% risk identified, immediate intervention is required in the {region} region. "
+                                f"The identified gap of {gap:,.0f} units exceeds the standard safety threshold for the {year} academic cycle.")
+    
+                        pdf.multi_cell(180, 8, rec)
+    
+                        # Footer
+                        pdf.set_y(-30)
+                        pdf.set_font("Arial", 'I', 8)
+                        pdf.cell(0, 10, "Generated by BloomCore Technologies - Intelligence for Education.", align='C')
+    
+                        return bytes(pdf.output())
 
                         # --- NEW: STRATEGIC POLICY RECOMMENDATIONS ---
                         pdf.ln(5)
@@ -543,6 +587,54 @@ elif page == "Projects":
                     )
 
 
+# --- PASTE STEP B RIGHT BEFORE THAT LINK ---
+st.write("---")
+st.subheader("🎯 Ministerial Resource Optimizer")
+st.markdown("""
+    *As a decision-maker, how would you distribute a limited pool of resources? 
+    This engine uses **Constrained Optimization** to ensure zero waste.*
+""")
+edu_level = st.radio(
+    "Select Education Level", 
+    ["Basic Education", "Secondary Education", "Technical and Vocational"],
+    horizontal=True # This spreads them out so they don't get squashed
+)
+# 1. Setup the Simulation Data (Filtering for the current selected education level)
+if 'df' in st.session_state:
+    # We grab a slice of the data to simulate on
+    sim_df = st.session_state.df[st.session_state.df['Education_Level'] == edu_level].copy()
+    
+    # 2. The Interactive Slider
+    sim_budget = st.slider("Select Available Intervention Pool (e.g., Teachers or Desks)", 
+                          min_value=1000, max_value=200000, value=50000, step=1000)
+    
+    # 3. Run the Logic
+    optimized_df = allocate_resources(sim_df, sim_budget)
+    if sim_df.empty:
+        st.warning("No data found for this education level. Try switching the Level at the top.")
+    else:
+        optimized_df = allocate_resources(sim_df, sim_budget)
+        # The chart will now update every time you move the slider!
+
+
+    # 4. Display the results
+    col_v1, col_v2 = st.columns([1, 1])
+    with col_v1:
+        st.dataframe(optimized_df[['Region', 'Implementation_Gap', 'Final_Approved_Intervention']], 
+                     use_container_width=True)
+    
+    with col_v2:
+        import plotly.express as px
+        fig_opt = px.bar(optimized_df, x='Region', y='Final_Approved_Intervention',
+                         title="Recommended Allocation per Region",
+                         color_discrete_sequence=['#00CC96'])
+        st.plotly_chart(fig_opt, use_container_width=True)
+        
+    # Impact Metric
+    total_used = optimized_df['Final_Approved_Intervention'].sum()
+    st.metric("Total Resources Deployed", f"{total_used:,.0f}", f"Unused: {sim_budget - total_used:,.0f}")
+# --------------------------------------------------
+
 
                     # --- DATA INPUT SELECTION ---
     # --- MOVE DATA & SOURCE CONTROLS TO MAIN PAGE ---
@@ -612,6 +704,18 @@ elif page == "Projects":
     else:
         # Fallback to existing session data
         df = st.session_state.df     
+
+    # ... (Inside your EduPulse section) ...
+
+    st.write("---")
+    st.header("🎓 EduPulse: Live Interactive Playground")
+    st.info("💡 **Recruiter Tip:** You can log in as a Director or Headteacher right here to test the predictive engine.")
+
+    # This creates the interactive window
+    # Replace the URL with your actual deployed app link
+    components.iframe("https://bece-edupulse-analyzer.streamlit.app", height=800, scrolling=True)
+
+    st.caption("Can't see the app? [Click here to open in a new tab](https://bece-edupulse-analyzer.streamlit.app/)")
 
 
 # 5. About Me Page
