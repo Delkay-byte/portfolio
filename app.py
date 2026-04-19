@@ -705,7 +705,6 @@ if 'df' in st.session_state:
         # Fallback to existing session data
         df = st.session_state.df     
 
-    
 
 # 5. About Me Page
 elif page == "About Me":
