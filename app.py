@@ -500,12 +500,8 @@ elif page == "Projects":
     - 🧠 Identify at-risk schools in both circuits and District/Municipality
     - 🏫 Support Headteachers with actionable insights
     - 🏛️ Guide Directors on resource allocation strategies
-    
-    ---
-    💡 **How to explore:**
-    Click the button below to launch the live system and interact with the predictive engine.
-    """)
-        
+    """) 
+
     # --- USER FLOW SECTION ---
     st.markdown("### 🔄 How EduPulse Works")
 
@@ -540,6 +536,11 @@ elif page == "Projects":
 
     st.info("💡 This system simulates real Ghana Education Service workflows (Director → Schools → Insights).")
 
+    st.markdown("""
+    💡 **How to explore:**
+    Click the button below to launch the live system and interact with the predictive engine.
+    """)
+        
     # --- BUTTON ROW ---
     btn1, btn2 = st.columns(2)
 
