@@ -317,7 +317,7 @@ elif page == "Projects":
 
     st.write("---")
 
-    # --- PROJECT 2: PROJECT GRIP (Ministerial Resource Predictor) ---
+   # --- PROJECT 2: PROJECT GRIP (Ministerial Resource Predictor) ---
     st.header("2. Project GRIP: Ministerial Resource Predictor 🇬🇭")
     st.subheader(f"🛠️ GRIP: {current_year} Interactive Risk Simulator")
 
@@ -330,381 +330,241 @@ elif page == "Projects":
     with col_b:
         st.markdown("""
         **Project Overview:** Developed to solve regional resource disparities. GRIP fuses MoE targets, GSS Census data, and UNICEF regional contexts.
-        
+    
         **Key Breakthroughs:**
         * **Hybrid Intelligence:** Gaussian Naive Bayes + Structural Policy Guardrails.
         * **Granular Analysis:** Now tracking performance across all **16 regions**.
-        * **Visual Status Engine:** Automated classification of regional performance (Critical/Stable/Impressive)
-        * **Impact:** Identified 100% of high-risk ministerial targets in validation.
+        * **Visual Status Engine:** Automated classification (Critical/Stable/Impressive)
+        * **Impact:** Identified 100% of high-risk ministerial targets.
         """)
-    
-    st.write("---")
-    st.subheader(f"🛠️ GRIP: {current_year} Interactive Risk Simulator")
-    st.info(f"Select a region to simulate {current_year} target feasibility based on current regional constraints.")
 
-    
-    # --- SIMPLIFIED GRIP LOGIC ---
-    # We no longer try to load the files here, we just check if they loaded successfully at the top
-    
+    st.write("---")
+    st.info(f"Select a region to simulate {current_year} target feasibility.")
+
+    # --- GRIP ENGINE ---
     if not grip_assets_loaded:
-        st.warning("⚠️ Project GRIP assets not found. Ensure 'ges_hybrid_engine.pkl' and 'median_gap_reference.pkl' are in the folder.")
+        st.warning("⚠️ GRIP assets not found.")
     else:
         with st.container(border=True):
             c1, c2 = st.columns(2)
+
             with c1:
-                # This is now the ONLY instance of this selectbox
-                selected_region = st.selectbox("Select Target Region", list(REGION_CONTEXT_MAP.keys()))
+                selected_region = st.selectbox("Select Region", list(REGION_CONTEXT_MAP.keys()))
                 derived_belt = REGION_CONTEXT_MAP[selected_region]
-                st.caption(f"📍 Automatically mapped to: **{derived_belt}**")
-                
-                edu_level = st.selectbox("Education Level", ["Basic Education", "Secondary Education", "Technical and Vocational", "Tertiary Education"])
-                pop = st.number_input("Regional Population Aged 3+", min_value=100000, value=850000)
-            
+                st.caption(f"📍 Belt: {derived_belt}")
+
+                edu_level = st.selectbox(
+                    "Education Level",
+                    ["Basic Education", "Secondary Education", "Technical and Vocational", "Tertiary Education"]
+                )
+                pop = st.number_input("Population", min_value=100000, value=850000)
+
             with c2:
-                lit_rate = st.slider("Regional Literacy Rate (%)", 0.0, 100.0, 68.0)
-                indicator_name = st.selectbox("Indicator Name", [
-                    "Enhanced Teacher Deployment (PTR)", 
-                    "Increased Enrolment", 
-                    "Improved Teacher Professionalism",
-                    "Increased Functional Literacy",
-                    "Increase Science / Humanities Ratio",
-                    "Increase % of Female Enrolment"
+                lit_rate = st.slider("Literacy Rate (%)", 0.0, 100.0, 68.0)
+                indicator_name = st.selectbox("Indicator", [
+                "Enhanced Teacher Deployment (PTR)", 
+                "Increased Enrolment", 
+                "Improved Teacher Professionalism",
+                "Increased Functional Literacy",
+                "Increase Science / Humanities Ratio",
+                "Increase % of Female Enrolment"
                 ])
-                sim_latest = st.number_input("Simulated Latest Value (%)", value=45.0)
-                sim_target = st.number_input("Simulated 2026 Target (%)", value=100.0)
-                imp_gap = sim_target - sim_latest
+                sim_latest = st.number_input("Current Value (%)", value=45.0)
+                sim_target = st.number_input("Target (%)", value=100.0)
+
+            imp_gap = sim_target - sim_latest
 
             if st.button("Generate Regional Analysis", type="primary"):
-                # 1. Prepare the raw input DataFrame
-                # The Pipeline will handle the scaling and encoding automatically!
+
                 input_df = pd.DataFrame({
-                    'Education_Level': [edu_level], 'Context_Name': [derived_belt],
-                    'Total_Pop': [pop], 'Literacy_Rate': [lit_rate]
+                'Education_Level': [edu_level],
+                'Context_Name': [derived_belt],
+                'Total_Pop': [pop],
+                'Literacy_Rate': [lit_rate]
                 })
-                
-                # 2. Get Probability from the Model
-                # [0][1] gets the probability of "High Risk"
+
                 prob_risk = grip_engine.predict_proba(input_df)[0][1]
 
-                # Status Engine Logic
                 if imp_gap <= 5:
-                    status_label, status_color, text_color = "IMPRESSIVE: Target Nearly Met", "#00cc96", "white"
+                    status_label, status_color = "IMPRESSIVE", "#00cc96"
                 elif imp_gap > 35 or prob_risk > 0.90:
-                    status_label, status_color, text_color = "CRITICAL: Urgent Intervention Required", "#ef553b", "white"
+                    status_label, status_color = "CRITICAL", "#ef553b"
                 else:
-                    status_label, status_color, text_color = "STABLE: Consistent Progress", "#ab63fa", "white"
+                    status_label, status_color = "STABLE", "#ab63fa"
 
-                st.write("---")
-                
-                # Visual Gauge
-                fig = go.Figure(go.Indicator(
-                    mode = "gauge+number", value = sim_latest,
-                    title = {'text': f"{indicator_name} Progress", 'font': {'size': 18}},
-                    gauge = {
-                        'axis': {'range': [None, 100]},
-                        'bar': {'color': status_color},
-                        'threshold': {'line': {'color': "white", 'width': 4}, 'thickness': 0.75, 'value': sim_target}
-                    }
-                ))
-                fig.update_layout(height=300, paper_bgcolor="rgba(0,0,0,0)", font={'color': "white"})
+                st.metric("Risk", f"{prob_risk*100:.1f}%")
+                st.metric("Gap", f"{imp_gap:.1f}%")
+
+                st.markdown(f"""
+                <div style="background:{status_color};padding:15px;border-radius:10px;text-align:center;">
+                    <b>{status_label}</b>
+                </div>
+                """, unsafe_allow_html=True)
+
+                # --- PDF FUNCTION (CLEAN FIX) ---
+            def create_pdf_report():
+                pdf = FPDF()
+                pdf.add_page()
+                pdf.set_font("Arial", size=12)
+                pdf.cell(0, 10, f"{selected_region} - {status_label}", ln=True)
+                return bytes(pdf.output())
+
+            st.download_button(
+                "📥 Download Report",
+                create_pdf_report(),
+                file_name="GRIP_Report.pdf"
+            )
+
+    # --- RESOURCE OPTIMIZER ---
+    st.write("---")
+    st.subheader("🎯 Resource Optimizer")
+
+    edu_level_opt = st.radio(
+        "Select Education Level",
+        ["Basic Education", "Secondary Education", "Technical and Vocational"],
+        horizontal=True
+    )
+
+    if 'df' in st.session_state:
+        sim_df = st.session_state.df[
+            st.session_state.df['Education_Level'] == edu_level_opt
+        ].copy()
+
+        sim_budget = st.slider("Budget", 1000, 200000, 50000, step=1000)
+
+        if not sim_df.empty:
+            optimized_df = allocate_resources(sim_df, sim_budget)
+
+            col1, col2 = st.columns(2)
+
+            with col1:
+                st.dataframe(optimized_df[['Region', 'Final_Approved_Intervention']])
+
+            with col2:
+                import plotly.express as px
+                fig = px.bar(optimized_df, x='Region', y='Final_Approved_Intervention')
                 st.plotly_chart(fig, use_container_width=True)
 
-                st.markdown(f'<div class="status-card" style="background-color: {status_color};"><h3>{status_label}</h3></div>', unsafe_allow_html=True)
-                
-
-                res_m1, res_m2, res_m3 = st.columns(3)
-                res_m1.metric("AI Risk Score", f"{prob_risk*100:.1f}%")
-                res_m2.metric("Remaining Gap", f"{imp_gap:.1f}%")
-                res_m3.metric("Status", "Critical" if "CRITICAL" in status_label else "Healthy")
-
-                # --- ENHANCED REPORT LAYOUT ---
-                with st.expander("📊 View Detailed Regional Analysis", expanded=True):
-                    # Determine color scheme based on status
-                    if "CRITICAL" in status_label:
-                        border_color = "#FF4B4B"
-                        bg_color = "#311010"
-                    elif "STABLE" in status_label:
-                        border_color = "#AB63FA"
-                        bg_color = "#1A1031"
-                    else:
-                        border_color = "#00CC96"
-                        bg_color = "#0A211B"
-
-                    # Header Section
-                    st.markdown(f"""
-                        <div style="border-left: 10px solid {border_color}; background-color: {bg_color}; padding: 20px; border-radius: 5px;">
-                            <h2 style="margin:0; color: white;">{selected_region} Regional Assessment</h2>
-                            <p style="font-size: 1.2rem; font-weight: bold; color: {border_color}; margin: 5px 0;">{status_label}</p>
-                        </div>
-                    """, unsafe_allow_html=True)
-
-                    # Metric Grid
-                    st.write("###")
-                    m_col1, m_col2, m_col3 = st.columns(3)
-    
-                    with m_col1:
-                        st.metric("Risk Probability", f"{prob_risk*100:.2f}%", delta="-High Risk", delta_color="inverse")
-                    with m_col2:
-                        st.metric("Target Gap", f"{imp_gap:.1f}%", help="Distance to 2026 Goal")
-                    with m_col3:
-                        st.metric("Priority Level", "P1 - Urgent" if "CRITICAL" in status_label else "P3 - Monitor")
-
-                    # Actionable Insight Box
-                    st.markdown(f"""
-                        <div style="background-color: #1e2130; padding: 15px; border-radius: 10px; border: 1px solid #3d4156; margin-top: 15px;">
-                            <span style="color: #808495; text-transform: uppercase; font-size: 0.8rem; font-weight: bold;">Executive Recommendation</span>
-                            <p style="margin-top: 8px; color: #E0E0E0;">
-                                The model identifies <b>{selected_region}</b> as a high-volatility zone for <i>{indicator_name}</i> in the <b>{current_year}</b> cycle. 
-                                Immediate resource reallocation is advised to close the <b>{imp_gap:.1f}%</b> gap before the <b>{current_year}</b> deadline.
-                            </p>
-                        </div>
-                    """, unsafe_allow_html=True)
-
-
-                    def create_pdf_report(region, indicator, status, risk, gap, belt, year):
-                        pdf = FPDF()
-                        pdf.add_page()
-    
-                        # --- BRANDING HEADER ---
-                        pdf.set_fill_color(0, 204, 150) # BloomCore Teal
-                        pdf.rect(0, 0, 210, 40, 'F')
-    
-                        pdf.set_font("Arial", 'B', 24)
-                        pdf.set_text_color(255, 255, 255)
-                        pdf.cell(0, 20, "PROJECT GRIP", ln=True, align='C')
-                        pdf.set_font("Arial", size=12)
-                        pdf.cell(0, 10, "GES Resource Intervention Predictor", ln=True, align='C')
-    
-                        # --- REPORT BODY ---
-                        pdf.set_text_color(0, 0, 0)
-                        pdf.ln(20)
-                        pdf.set_font("Arial", 'B', 14)
-                        pdf.cell(0, 10, f"Strategic Analysis: {region} Region", ln=True)
-                        pdf.line(10, pdf.get_y(), 200, pdf.get_y()) # Horizontal line
-    
-                        pdf.ln(5)
-                        pdf.set_font("Arial", size=11)
-    
-                        # Data Table Style
-                        data = [
-                            ["Indicator", indicator],
-                            ["Current Status", status],
-                            ["Risk Level", f"{risk:.2g}%"],
-                            ["Implementation Gap", f"{gap:,.0f} units"],
-                            ["Administrative Belt", belt]
-                        ]
-    
-                        for row in data:
-                            pdf.set_font("Arial", 'B', 11)
-                            pdf.cell(50, 10, row[0], border=1)
-                            pdf.set_font("Arial", size=11)
-                            pdf.cell(130, 10, str(row[1]), border=1, ln=True)
-    
-                        # --- RECOMMENDATIONS ---
-                        pdf.ln(10)
-                        pdf.set_font("Arial", 'B', 12)
-                        pdf.cell(0, 10, "Ministerial Action Plan:", ln=True)
-                        pdf.set_font("Arial", 'I', 11)
-    
-                        rec = (f"Based on the {risk:.2g}% risk identified, immediate intervention is required in the {region} region. "
-                                f"The identified gap of {gap:,.0f} units exceeds the standard safety threshold for the {year} academic cycle.")
-    
-                        pdf.multi_cell(180, 8, rec)
-    
-                        # Footer
-                        pdf.set_y(-30)
-                        pdf.set_font("Arial", 'I', 8)
-                        pdf.cell(0, 10, "Generated by BloomCore Technologies - Intelligence for Education.", align='C')
-    
-                        return bytes(pdf.output())
-
-                        # --- NEW: STRATEGIC POLICY RECOMMENDATIONS ---
-                        pdf.ln(5)
-                        pdf.set_font("Arial", "B", 12)
-                        pdf.cell(190, 10, "Strategic Policy Recommendations:", ln=True)
-                        pdf.set_font("Arial", "", 11)
-                    
-                        if "CRITICAL" in status:
-                            recommendations = [
-                                f"1. Immediate Resource Realignment: Prioritize {region} for the {year} budget cycle.",
-                                f"2. Focused Monitoring: Address the {gap:.1f}% gap before the end of Q4 {year}.", # FIXED: Added 'f'
-                                f"3. Belt-Level Intervention: Coordinate with {belt} directors for emergency funding.",
-                                f"4. Risk Mitigation: Conduct a root-cause analysis on why the 2026 target is lagging."
-                            ]
-                        elif "STABLE" in status:
-                            recommendations = [
-                                "1. Efficiency Optimization: Identify local bottlenecks to move from Stable to Impressive.",
-                                "2. Peer-to-Peer Mentorship: Use this region's model to assist lower-performing areas.",
-                                "3. Sustainability Audit: Ensure that current resource levels are maintained through 2026.",
-                                "4. Data Validation: Conduct quarterly checks to ensure the implementation gap continues to shrink."
-                            ]
-                        else: # For IMPRESSIVE status
-                            recommendations = [
-                                "1. Best Practice Documentation: Document the success factors for national scaling.",
-                                "2. Resource Surplus Analysis: Evaluate if resources can be safely shared with Critical regions.",
-                                "3. Milestone Celebration: Acknowledge regional stakeholders for early target achievement."
-                            ]
-
-                        for rec in recommendations:
-                            pdf.multi_cell(180, 8, rec, ln=True) 
-                            pdf.ln(2)
-                        # --- Footer ---
-                        pdf.ln(10)
-                        pdf.set_font("Arial", "I", 8)
-                        pdf.cell(0, 10, "Confidential | Saviour Amegayie Data Portfolio | BloomCore Tech", align="C")
-
-                        # Return as bytes for Streamlit
-                        return bytes(pdf.output())
-
-                    # 1. First, make sure you've identified the year from the data
-                    # We use .iloc[0] to grab the year from the first row of the current dataframe
-                    # 1. Final check for year consistency
-                    try:
-                        current_year = df['Year'].iloc[0] if 'Year' in df.columns else 2026
-                    except:
-                        current_year = 2026
-                    # 2. Generate the PDF object using your updated function
-                    # This prepares the data in memory before the user clicks download
-                    pdf_report = create_pdf_report(
-                        selected_region, 
-                        indicator_name, 
-                        status_label, 
-                        prob_risk * 100, 
-                        imp_gap, 
-                        derived_belt,
-                        current_year  # This ensures the year 2027 or 2028 appears in the PDF
-)
-                    
-                    # 4. Generate & Show PDF Download Button
-                    pdf_report = create_pdf_report(selected_region, indicator_name, status_label, prob_risk*100, imp_gap, derived_belt, current_year)
-                
-                    st.download_button(
-                        label="📥 Download Strategic Policy Report",
-                        data=pdf_report,
-                        file_name=f"GRIP_Report_{selected_region}.pdf",
-                        mime="application/pdf",
-                        key="grip_report_download_final"
-                    )
-
-
-# --- PASTE STEP B RIGHT BEFORE THAT LINK ---
-st.write("---")
-st.subheader("🎯 Ministerial Resource Optimizer")
-st.markdown("""
-    *As a decision-maker, how would you distribute a limited pool of resources? 
-    This engine uses **Constrained Optimization** to ensure zero waste.*
-""")
-edu_level = st.radio(
-    "Select Education Level", 
-    ["Basic Education", "Secondary Education", "Technical and Vocational"],
-    horizontal=True # This spreads them out so they don't get squashed
-)
-# 1. Setup the Simulation Data (Filtering for the current selected education level)
-if 'df' in st.session_state:
-    # We grab a slice of the data to simulate on
-    sim_df = st.session_state.df[st.session_state.df['Education_Level'] == edu_level].copy()
-    
-    # 2. The Interactive Slider
-    sim_budget = st.slider("Select Available Intervention Pool (e.g., Teachers or Desks)", 
-                          min_value=1000, max_value=200000, value=50000, step=1000)
-    
-    # 3. Run the Logic
-    optimized_df = allocate_resources(sim_df, sim_budget)
-    if sim_df.empty:
-        st.warning("No data found for this education level. Try switching the Level at the top.")
-    else:
-        optimized_df = allocate_resources(sim_df, sim_budget)
-        # The chart will now update every time you move the slider!
-
-
-    # 4. Display the results
-    col_v1, col_v2 = st.columns([1, 1])
-    with col_v1:
-        st.dataframe(optimized_df[['Region', 'Implementation_Gap', 'Final_Approved_Intervention']], 
-                     use_container_width=True)
-    
-    with col_v2:
-        import plotly.express as px
-        fig_opt = px.bar(optimized_df, x='Region', y='Final_Approved_Intervention',
-                         title="Recommended Allocation per Region",
-                         color_discrete_sequence=['#00CC96'])
-        st.plotly_chart(fig_opt, use_container_width=True)
-        
-    # Impact Metric
-    total_used = optimized_df['Final_Approved_Intervention'].sum()
-    st.metric("Total Resources Deployed", f"{total_used:,.0f}", f"Unused: {sim_budget - total_used:,.0f}")
-# --------------------------------------------------
-
-
-                    # --- DATA INPUT SELECTION ---
-    # --- MOVE DATA & SOURCE CONTROLS TO MAIN PAGE ---
+    # --- DATA MANAGEMENT ---
     st.write("---")
-    st.subheader("📁 Data & Source Management")
+    st.subheader("📁 Data Management")
 
-    # Create three equal columns for a clean layout
-    btn_col1, btn_col2, btn_col3 = st.columns(3)
+    btn1, btn2, btn3 = st.columns(3)
 
-    with btn_col1:
-        # 1. View Source Code
-        st.link_button("📂 View GRIP Source Code", "https://github.com/Delkay-byte/Your-Repo-Name", use_container_width=True)
+    with btn1:
+        st.link_button("📂 View Source", "https://github.com/Delkay-byte/Your-Repo-Name")
 
-    
-    # We create the sample data in memory
-    template_data = pd.DataFrame({
-        'Region': ['Volta', 'Ahafo', 'Ashanti', 'Greater Accra', 'Northern'],
-        'Indicator': ['ICT Infrastructure', 'ICT Infrastructure', 'ICT Infrastructure', 'ICT Infrastructure', 'ICT Infrastructure'],
-        'Year': [2027, 2027, 2027, 2027, 2027],
-        'Education_Level': ['Basic Education', 'Basic Education', 'Secondary Education', 'Secondary Education', 'Technical and Vocational'],
-        'Total_Pop': [850000, 620000, 1200000, 1500000, 950000],
-        'Literacy_Rate': [68.5, 52.0, 75.8, 88.2, 45.5],
-        'Current_Value': [65.0, 42.0, 78.5, 88.0, 51.2],
-        'Target_2026': [100, 100, 100, 100, 100],
-        'Budget_Allocation': [50000, 30000, 75000, 90000, 45000]
+    with btn2:
+        template = pd.DataFrame({
+        'Region': ['Volta', 'Ahafo'],
+        'Education_Level': ['Basic Education', 'Secondary Education']
         })
+        st.download_button("Download Template", template.to_csv(index=False))
 
-    # --- TEMPLATE DOWNLOAD ---
-    with btn_col2:
-        st.download_button(
-            label="📥 Download Template CSV",
-            data=template_data.to_csv(index=False),
-            file_name="GES_Template.csv",
-            mime="text/csv",
-            use_container_width=True
+    with btn3:
+        uploaded_file = st.file_uploader("Upload CSV", type=["csv"])
+
+    # --- FIXED UPLOAD LOGIC ---
+    if uploaded_file:
+        try:
+            new_df = pd.read_csv(uploaded_file)
+        except Exception as e:
+            st.error(f"Error reading CSV file: {e}")
+        else:
+            st.session_state.df = new_df
+            st.success("Dataset updated")
+            st.rerun()
+
+# =========================================================
+# 🎓 EDUPULSE - INTERACTIVE DEMO (TAB + AUTH + LOADER)
+# =========================================================
+    import streamlit.components.v1 as components
+    import time
+
+    st.write("---")
+    st.header("🎓 EduPulse: AI-Powered Education Intelligence")
+
+    st.info("💡 Recruiters can simulate real user roles and interact with the live system.")
+
+    # --- TAB LAYOUT ---
+    tab1, tab2 = st.tabs(["🧠 Live App", "🔐 Role Simulation"])
+
+# =========================
+# TAB 1: LIVE APP (WITH LOADER)
+# =========================
+    with tab1:
+        st.subheader("🚀 Live System Preview")
+
+    # Loader animation
+        with st.spinner("Launching EduPulse system..."):
+            time.sleep(1.5)  # short delay for realism
+
+    # Embed app
+        components.iframe(
+        "https://your-edupulse-link.streamlit.app",
+        height=800,
+        scrolling=True
         )
 
-    with btn_col3:
-        # 3. New Data Upload 
-        uploaded_file = st.file_uploader("Upload New GES Dataset (CSV)", type=["csv"], label_visibility="collapsed")
+        st.caption(
+        "Can't see the app? Open in new tab: https://your-edupulse-link.streamlit.app"
+        )
 
-    # --- LOGIC TO UPDATE DATA ON MAIN PAGE ---
-    if uploaded_file is not None:
-        # Use the robust try-except block here
-        try:
-            # 1. Read the new file into a temporary dataframe
-            new_df = pd.read_csv(uploaded_file, on_bad_lines='warn', skipinitialspace=True)
-            
-            # 2. Check if this is actually NEW data to prevent the rerun loop
-            # We compare the shape or a hash to see if it's different from current state
-            if not new_df.equals(st.session_state.get('df')):
-                st.session_state.df = new_df
 
-                # Re-sync local variables for the immediate cycle
-                df = st.session_state.df
-                if 'Year' in df.columns:
-                    current_year = df['Year'].iloc[0]
+# =========================
+# TAB 2: ROLE-BASED DEMO
+# =========================
+    with tab2:
+        st.subheader("🔐 Role-Based Simulation")
 
-                st.success("✅ Dataset updated successfully!")
-                # 3. Only rerun if the data actually changed
-                st.rerun()
-                
-            # If the data is the same, we do nothing (stopping the loop)
-        except Exception as e:
-            st.error(f"❌ Error parsing CSV: {e}")
-            st.info("💡 Tip: Ensure your CSV uses commas as delimiters and has no empty rows.")
+    role = st.radio(
+        "Select User Role",
+        ["Director (Policy Level)", "Headteacher (School Level)"],
+        horizontal=True
+    )
+
+    st.write("---")
+
+    # --- DIRECTOR VIEW ---
+    if role == "Director (Policy Level)":
+        st.success("🧠 Director Dashboard Simulation")
+
+        col1, col2, col3 = st.columns(3)
+        col1.metric("Regions at Risk", "6", "↑ High Priority")
+        col2.metric("Budget Efficiency", "92%", "+4%")
+        col3.metric("National Gap", "18.5%", "↓ Improving")
+
+        st.markdown("""
+        **Capabilities:**
+        - National-level monitoring
+        - Budget reallocation decisions
+        - Cross-region comparisons
+        - AI-powered risk forecasting
+        """)
+
+        st.warning("⚠️ Insight: Northern belt requires immediate intervention.")
+
+
+    # --- HEADTEACHER VIEW ---
     else:
-        # Fallback to existing session data
-        df = st.session_state.df     
+        st.success("🏫 Headteacher Dashboard Simulation")
 
+        col1, col2, col3 = st.columns(3)
+        col1.metric("Student Enrolment", "1,240", "+35")
+        col2.metric("Teacher Ratio", "1:38", "⚠️ High")
+        col3.metric("Performance Score", "74%", "+6%")
+
+        st.markdown("""
+        **Capabilities:**
+        - School-level performance tracking
+        - Teacher allocation insights
+        - Literacy improvement monitoring
+        - Localized recommendations
+        """)
+
+        st.info("📌 Recommendation: Request 3 additional teachers to meet PTR target.")
+
+# =========================================================
 
 # 5. About Me Page
 elif page == "About Me":
