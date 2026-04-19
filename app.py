@@ -505,6 +505,40 @@ elif page == "Projects":
     💡 **How to explore:**
     Click the button below to launch the live system and interact with the predictive engine.
     """)
+        
+    # --- USER FLOW SECTION ---
+    st.markdown("### 🔄 How EduPulse Works")
+
+    flow_col1, flow_col2, flow_col3 = st.columns(3)
+
+    with flow_col1:
+        st.markdown("""
+    #### 🏛️ Director Setup
+    - Register as a Director  
+    - Download **Circuit Template**  
+    - Upload completed dataset  
+    - Receive **Municipality Code**
+    """)
+
+    with flow_col2:
+        st.markdown("""
+    #### 🏫 Headteacher Access
+    - Register using Director Code  
+    - Download **School Template**  
+    - Upload school data  
+    - Gain system access
+    """)
+
+    with flow_col3:
+        st.markdown("""
+    #### 📊 AI Insights
+    - Predict BECE performance  
+    - Identify at-risk schools  
+    - Optimize interventions  
+    - Guide policy decisions
+    """)
+
+    st.info("💡 This system simulates real Ghana Education Service workflows (Director → Schools → Insights).")
 
     # --- BUTTON ROW ---
     btn1, btn2 = st.columns(2)
