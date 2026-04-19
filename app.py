@@ -486,7 +486,7 @@ elif page == "Projects":
 
     with col1:
         try:
-            st.image("edupulse_logo.png", use_container_width=True)
+            st.image("edupulse.png", use_container_width=True)
         except:
             st.info("📊 Add 'edupulse_logo.png' to your project folder")
 
@@ -494,7 +494,7 @@ elif page == "Projects":
         st.markdown("""
         **EduPulse** is an intelligent education analytics platform designed to support **data-driven decision-making** across Ghana’s education system.
 
-        It leverages **Machine Learning + Policy Logic** to:
+        It leverages **Machine Learning** + **Policy Logic** to:
     
     - 📊 Predict student performance outcomes (BECE focus)
     - 🧠 Identify at-risk schools in both circuits and District/Municipality
