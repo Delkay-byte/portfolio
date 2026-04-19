@@ -528,7 +528,7 @@ elif page == "Projects":
     with flow_col3:
         st.markdown("""
     #### 📊 AI Insights
-    - Predict BECE performance  
+    - Predict & Analyze BECE performance  
     - Identify at-risk schools  
     - Optimize interventions  
     - Guide policy decisions
