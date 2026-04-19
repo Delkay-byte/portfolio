@@ -474,96 +474,47 @@ elif page == "Projects":
             st.success("Dataset updated")
             st.rerun()
 
-# =========================================================
-# 🎓 EDUPULSE - INTERACTIVE DEMO (TAB + AUTH + LOADER)
-# =========================================================
-    import streamlit.components.v1 as components
-    import time
+    # =========================================================
+    # 🎓 EDUPULSE - CLEAN PORTFOLIO SHOWCASE
+    # =========================================================
 
     st.write("---")
     st.header("🎓 EduPulse: AI-Powered Education Intelligence")
 
-    st.info("💡 Recruiters can simulate real user roles and interact with the live system.")
+    # Layout: Image + Description
+    col1, col2 = st.columns([1, 2])
 
-    # --- TAB LAYOUT ---
-    tab1, tab2 = st.tabs(["🧠 Live App", "🔐 Role Simulation"])
+    with col1:
+        try:
+            st.image("edupulse_logo.png", use_container_width=True)
+        except:
+            st.info("📊 Add 'edupulse_logo.png' to your project folder")
 
-# =========================
-# TAB 1: LIVE APP (WITH LOADER)
-# =========================
-    with tab1:
-        st.subheader("🚀 Live System Preview")
+    with col2:
+        st.markdown("""
+        **EduPulse** is an intelligent education analytics platform designed to support **data-driven decision-making** across Ghana’s education system.
 
-    # Loader animation
-        with st.spinner("Launching EduPulse system..."):
-            time.sleep(1.5)  # short delay for realism
+        It leverages **Machine Learning + Policy Logic** to:
+    
+    - 📊 Predict student performance outcomes (BECE focus)
+    - 🧠 Identify at-risk schools in both circuits and District/Municipality
+    - 🏫 Support Headteachers with actionable insights
+    - 🏛️ Guide Directors on resource allocation strategies
+    
+    ---
+    💡 **How to explore:**
+    Click the button below to launch the live system and interact with the predictive engine.
+    """)
 
-    # Embed app
-        components.iframe(
-        "https://your-edupulse-link.streamlit.app",
-        height=800,
-        scrolling=True
-        )
-
-        st.caption(
-        "Can't see the app? Open in new tab: https://your-edupulse-link.streamlit.app"
-        )
-
-
-# =========================
-# TAB 2: ROLE-BASED DEMO
-# =========================
-    with tab2:
-        st.subheader("🔐 Role-Based Simulation")
-
-    role = st.radio(
-        "Select User Role",
-        ["Director (Policy Level)", "Headteacher (School Level)"],
-        horizontal=True
+    # Call-to-action button
+    st.link_button(
+    "🚀 Launch EduPulse Live App",
+    "https://bece-edupulse-analyzer.streamlit.app/",
+    use_container_width=True
     )
+    st.success("✅ Live | Deployed | Recruiter-Tested")
+    st.caption("🔗 Opens in a new tab | Fully interactive Streamlit application")
 
-    st.write("---")
-
-    # --- DIRECTOR VIEW ---
-    if role == "Director (Policy Level)":
-        st.success("🧠 Director Dashboard Simulation")
-
-        col1, col2, col3 = st.columns(3)
-        col1.metric("Regions at Risk", "6", "↑ High Priority")
-        col2.metric("Budget Efficiency", "92%", "+4%")
-        col3.metric("National Gap", "18.5%", "↓ Improving")
-
-        st.markdown("""
-        **Capabilities:**
-        - National-level monitoring
-        - Budget reallocation decisions
-        - Cross-region comparisons
-        - AI-powered risk forecasting
-        """)
-
-        st.warning("⚠️ Insight: Northern belt requires immediate intervention.")
-
-
-    # --- HEADTEACHER VIEW ---
-    else:
-        st.success("🏫 Headteacher Dashboard Simulation")
-
-        col1, col2, col3 = st.columns(3)
-        col1.metric("Student Enrolment", "1,240", "+35")
-        col2.metric("Teacher Ratio", "1:38", "⚠️ High")
-        col3.metric("Performance Score", "74%", "+6%")
-
-        st.markdown("""
-        **Capabilities:**
-        - School-level performance tracking
-        - Teacher allocation insights
-        - Literacy improvement monitoring
-        - Localized recommendations
-        """)
-
-        st.info("📌 Recommendation: Request 3 additional teachers to meet PTR target.")
-
-# =========================================================
 
 # 5. About Me Page
 elif page == "About Me":
